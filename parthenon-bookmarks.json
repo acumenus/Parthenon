@@ -1,0 +1,354 @@
+[
+  {
+    "title": "Portainer",
+    "colour": "#161b1f",
+    "url": "https://dev.acumenus.net:9443",
+    "description": "{\"enabled\":\"1\",\"dataonly\":\"1\",\"override_url\":null,\"username\":\"admin\",\"password\":\"Acumenus321$%\",\"ignore_tls\":\"0\"}",
+    "appid": "07b796b3a10eaa8b6f485ed2379187a39400b459",
+    "appdescription": "Portainer is a simple management solution for Docker. Easily manage your Docker hosts and Docker Swarm clusters via Portainer web user interface."
+  },
+  {
+    "title": "Atlas",
+    "colour": "#161b1f",
+    "url": "https://dev.acumenus.net/atlas",
+    "description": null,
+    "appid": "null",
+    "appdescription": "ATLAS is a free, publicly available, web-based tool developed by the OHDSI community that facilitates the design and execution of analyses on standardized, patient-level, observational data in the CDM format. ATLAS is deployed as a web application in combination with the OHDSI WebAPI."
+  },
+  {
+    "title": "OHDSI.org",
+    "colour": "#161b1f",
+    "url": "https://www.ohdsi.org/omop/",
+    "description": null,
+    "appid": "null",
+    "appdescription": "The Observational Health Data Sciences and Informatics (or OHDSI, pronounced \"Odyssey\") program is a multi-stakeholder, interdisciplinary collaborative to bring out the value of health data through large-scale analytics. All our solutions are open-source."
+  },
+  {
+    "title": "ORTHANC Explorer",
+    "colour": "#161b1f",
+    "url": "http://dev.acumenus.net:8042",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Orthanc is a free, open-source DICOM server. It allows users to perform DICOM operations such as sending, receiving, querying, and retrieving DICOM."
+  },
+  {
+    "title": "Phenotype Library",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/PhenotypeLibrary",
+    "description": null,
+    "appid": "null",
+    "appdescription": "A.publicly accessible, version-controlled Phenotype Library to guide real-world evidence towards the FAIR principles: Findability, Accessibility, Reproducibility, and Interoperability.  This library aims to foster the submission and retrieval of high-quality cohort definitions, cataloging of metadata, attribution and promotion of discovery and reuse in scientific research."
+  },
+  {
+    "title": "Genomics CDM",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Genomic-CDM",
+    "description": null,
+    "appid": "null",
+    "appdescription": "A prototype of the Genomic CDM that is on developing, so please use it for reference purpose."
+  },
+  {
+    "title": "Criteria2Query",
+    "colour": "#161b1f",
+    "url": "http://34.70.212.14:8080/criteria2query_test/",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Criteria2Query (C2Q) is an automatic cohort identification system. It enhances human-computer collaboration to convert complex eligibility criteria text into more accurate and feasible cohort SQL queries. It synergizes machine efficiency and human intelligence of domain experts to enable real-time user intervention for criteria selection and simplification, parsing error correction, and context-dependent concept mapping."
+  },
+  {
+    "title": "Project Parthenon",
+    "colour": "#161b1f",
+    "url": "https://github.com/acumenus/Parthenon",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Project Parthenon is an effort to develop an universal \"Homepage\" for OHDSI/OMOP assets and applications.  You are currently using the v.0.7.0beta of this application based on Heimdall (https://heimdall.site/)."
+  },
+  {
+    "title": "ACUMENUS.ai",
+    "colour": "#161b1f",
+    "url": "https://app.superagi.com/",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Example of an AI interface that can be developed to continuously learn from OHDSI web assets such as GitHub documentation, forum posts, etc."
+  },
+  {
+    "title": "authentik",
+    "colour": "#5AA",
+    "url": "https://dev.acumenus.net:7443/",
+    "description": null,
+    "appid": "34088ce0402f28fca7286fc2d833c0d68b0d28cf",
+    "appdescription": "authentik is an open-source Identity Provider focused on flexibility and versatility. You can use authentik in an existing environment to add support for new protocols, implement sign-up/recovery/etc. in your application so you don't have to deal with it, and many other things."
+  },
+  {
+    "title": "Ares",
+    "colour": "#161b1f",
+    "url": "https://dev.acumenus.net/ares",
+    "description": null,
+    "appid": "null",
+    "appdescription": "A Research Exploration System (ARES) was developed in two parts; AresIndexer and the ARES web interface.\r\nAresIndexer is a new data indexing service (AresIndexer) that leverages the outputs of ACHILLES and DQD in order to\r\ncombine their information into a consolidated web-based user experience."
+  },
+  {
+    "title": "OHDSI Forums",
+    "colour": "#161b1f",
+    "url": "https://forums.ohdsi.org/",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Observational Health Data Sciences and Informatics (OHDSI, pronounced “Odyssey”) is an international community of stakeholders committed to bringing out the value of health data through large-scale analytics. If you are a new member-- Welcome! Tell us a bit about yourself on the General forum and let us know how we can help."
+  },
+  {
+    "title": "OHIF Viewer",
+    "colour": "#161b1f",
+    "url": "http://dev.acumenus.net:3000",
+    "description": null,
+    "appid": "null",
+    "appdescription": "The Open Health Imaging Foundation (OHIF) was launched in 2015 through a development partnership between Massachusetts General Hospital (MGH) Department of Radiology and Radical Imaging to create an open source web-based medical imaging platform for the global community."
+  },
+  {
+    "title": "CureID Registry",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/CureIdRegistry",
+    "description": null,
+    "appid": "null",
+    "appdescription": "The Cure Id Registry is a clinical registry leveraging OMOP and EHR automation. CURE ID is a collaboration between the FDA and the National Center for Advancing Translational Sciences (NCATS), part of the National Institutes of Health (NIH)."
+  },
+  {
+    "title": "THEIA NLPTools",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/NLPTools",
+    "description": null,
+    "appid": "null",
+    "appdescription": "THEIA is multi-component software aiming to make it easier and more convenient to use certain NLP toolkits with OHDSI. The main purpose of this application is to allow clients to process their medical texts stored in their OMOP Common Data Model formatted databases and give them the ability to query and visualize their results. Clients can share their information and queries with each other with support from an integrated user access control system. THEIA is currently in development, and supports indexing medical texts with CLAMP, MetaMap Lite, and cTAKES NLP toolkits."
+  },
+  {
+    "title": "Project Olympus",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Olympus",
+    "description": null,
+    "appid": "null",
+    "appdescription": "This is a project sponsored by Acumenus Data Sciences and our collaborators to create an universal installer for all platforms.  The installer will be interactive and take a new or experienced user through the steps necessary to install an array of foundation and extension OHDSI applications.  The installer will be capable of installing locally, remotely and on Cloud provider infrastructure."
+  },
+  {
+    "title": "Traefik",
+    "colour": "#FDA",
+    "url": "https://traefik.acumenus.net",
+    "description": "{\"enabled\":\"1\",\"override_url\":null,\"fields\":\"E\",\"ignore_tls\":\"0\",\"username\":\"acumenus\",\"password\":\"Acumenus321$%\"}",
+    "appid": "a83e2ce54bbef3bef63aa7f02b08dbda7fdae4c5",
+    "appdescription": "Træfik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy. Træfik integrates with your existing infrastructure components and configures itself automatically and dynamically."
+  },
+  {
+    "title": "HADES",
+    "colour": "#161b1f",
+    "url": "https://dev.acumenus.net/hades",
+    "description": null,
+    "appid": "null",
+    "appdescription": "HADES (previously the OHDSI METHODS LIBRARY) is a collection of open-source R packages that offer functions which can be used together to perform a complete observational study, starting from data in the CDM, and resulting in estimates and supporting statistics, figures, and tables."
+  },
+  {
+    "title": "Human Phenotype Ontology",
+    "colour": "#161b1f",
+    "url": "https://hpo.jax.org/app/",
+    "description": null,
+    "appid": "null",
+    "appdescription": "The HPO is currently being developed using the medical literature, Orphanet, DECIPHER, and OMIM. HPO currently contains over 13,000 terms and over 156,000 annotations to hereditary diseases. The HPO project and others have developed software for phenotype-driven differential diagnostics, genomic diagnostics, and translational research. The HPO is a flagship product of the Monarch Initiative, an NIH-supported international consortium dedicated to semantic integration of biomedical and model organism data with the ultimate goal of improving biomedical research."
+  },
+  {
+    "title": "Project Chronos",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Chronos",
+    "description": null,
+    "appid": "null",
+    "appdescription": "An effort to develop an elegant timeline visualization for incorporation into ATLAS.  The purpose is to provide an interactive timeline of an individual's clinical history and care pathway and if the patient is part of a defined cohort, a rollup to a higher level Sankey plot of sentinel events in the cohort's collective medical histories."
+  },
+  {
+    "title": "ClarityNLP",
+    "colour": "#161b1f",
+    "url": "https://github.com/ClarityNLP",
+    "description": null,
+    "appid": "null",
+    "appdescription": "ClarityNLP combines NLP techniques and libraries with a powerful query language, NLPQL, to identify patients and their clinical observations, extracted from text. ClarityNLP gives you insights into clinical (and other) text without a lot of custom configuration, and NLPQL lets you write your own definitions to find the patients and features that are relevant to your project."
+  },
+  {
+    "title": "dcm4che Project",
+    "colour": "#161b1f",
+    "url": "https://github.com/dcm4che",
+    "description": null,
+    "appid": "null",
+    "appdescription": "dcm4che is a collection of open source applications and utilities for the healthcare enterprise. These applications have been developed in the Java programming language for performance and portability, supporting deployment on JDK 1.6 and up.  At the core of the dcm4che project is a robust implementation of the DICOM standard. The dcm4che DICOM toolkit & library is used in many production applications across the world and the current (5.x) version has been re-architected for high performance and flexibility."
+  },
+  {
+    "title": "pgAdmin",
+    "colour": "#8CC",
+    "url": "https://dev.acumenus.net/pgadmin4",
+    "description": null,
+    "appid": "43784e464f66bfc0254a3bad48939f14a70c878e",
+    "appdescription": "pgAdmin is a feature rich open-source administration and development platform for PostgreSQL."
+  },
+  {
+    "title": "Athena",
+    "colour": "#161b1f",
+    "url": "https://athena.ohdsi.org/search-terms/start",
+    "description": null,
+    "appid": "null",
+    "appdescription": "ATHENA allows you to both search and load standardized vocabularies. It is a resource to be used, not a software tool to install. To download a zip file with all Standardized Vocabularies tables select all the vocabularies you need for your OMOP CDM."
+  },
+  {
+    "title": "Project Heracles",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Heracles",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Health Enterprise Resources and Care Learning Exploration System.  A set of study frameworks to elucidate the impacts of SDOH and examine areas for health equity improvement."
+  },
+  {
+    "title": "OpenLDAP",
+    "colour": "#158",
+    "url": "http://dev.acumenus.net/lam",
+    "description": null,
+    "appid": "null",
+    "appdescription": "LDAP Account Manager (LAM) is a webfrontend for managing entries (e.g. users, groups, DHCP settings) stored in an LDAP directory. LAM was designed to make LDAP management as easy as possible for the user. It abstracts from the technical details of LDAP and allows persons without technical background to manage LDAP entries. If needed, power users may still directly edit LDAP entries via the integrated LDAP browser."
+  },
+  {
+    "title": "Perseus",
+    "colour": "#161b1f",
+    "url": "https://perseus.acumenus.net",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Perseus combines intuitive and easy to use Web-based UI for design and implement ETL (extract, transform, and load) configuration and service for conversion the native/raw data to the OMOP Common Data Model (CDM).  Additionally, Perseus has embedded tools for search in the standardized vocabularies, generates documentation for the ETL process, create the code mappings and data quality check."
+  },
+  {
+    "title": "Project Homer",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Homer",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Health Outcomes and Medical Effectiveness Research . Whether investigating treatment outcomes, assessing healthcare interventions, or exploring real-world evidence, (HOMER) incorporates features such as predictive modeling, survival analysis, and propensity score matching, providing researchers with a user-friendly interface and extensive documentation to make it accessible to both seasoned statisticians and healthcare professionals without advanced statistical backgrounds."
+  },
+  {
+    "title": "Phoebe",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Broadsea/tree/main/phoebe",
+    "description": null,
+    "appid": "null",
+    "appdescription": "PHenotype Observed Entity Baseline Endorsements (PHOEBE) 1. Initial concept recommender provides a single starting concept to be used with descendants for a concept set; 2. Concept set recommender provides a list of included, excluded and recommended concepts for concept set adjustment."
+  },
+  {
+    "title": "Project Nostos",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Nostos",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Navigation of OMOP Structured Data via Text to SQL."
+  },
+  {
+    "title": "Helios",
+    "colour": "#161b1f",
+    "url": "https://dev.acumenus.net/helios",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Enables the use of SOLR for fast OMOP Vocab search in Atlas.  Either point to an existing SOLR instance, or have Broadsea build one. **The JDBC jar file is needed in the Broadsea root folder in order for Solr to perform the complete vocabulary data import step."
+  },
+  {
+    "title": "AidBox FHIR",
+    "colour": "#161b1f",
+    "url": "http://dev.acumenus.net:8383",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Aidbox uses FHIR as a foundation and provides developers with many components that different medical records applications can reuse:\r\nFHIR-aware PostgreSQL storage with SQL on FHIR support\r\nFHIR REST API with GraphQL, reactive API & subscriptions\r\nBuilt-in FHIR, ICD-10, SNOMED, RxNorm, LOINC, and US NPI terminologies with the ability to load your terminologies and value sets"
+  },
+  {
+    "title": "Project Aegis",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Aegis",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Application for Epidemiological Geographic Information System (AEGIS): a system for semi-automatic GIS visualization based on the OMOP Common Data Model."
+  },
+  {
+    "title": "PatientMatcher",
+    "colour": "#161b1f",
+    "url": "http://dev.acumenus.net:8720",
+    "description": null,
+    "appid": "null",
+    "appdescription": "PatientMatcher is a Python (Flask) and MongoDB - based implementation of a MatchMaker Exchange (MME) server, developed and actively maintained by Clinical Genomics, Science For Life Laboratory in Stockholm. PatientMatcher is designed as a standalone application, but can easily communicate with external applications via REST API. The MME Stockholm node is being implemented in clinical production in collaboration with the Genomic Medicine Center Karolinska at the Karolinska University Hospital."
+  },
+  {
+    "title": "Apollo",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Apollo",
+    "description": null,
+    "appid": "null",
+    "appdescription": "This Python package is for building and evaluating large general pre-trained models on data in the OMOP Common Data Model (CDM) format. The models are fitted on the structured data (concepts) in the CDM, not any natural language. We aim to evaluate these models on various tasks, such as patient-level prediction (either zero-shot or fine-tuned)."
+  },
+  {
+    "title": "DataHub",
+    "colour": "#161b1f",
+    "url": "http://dev.acumenus.net/datahub",
+    "description": null,
+    "appid": "null",
+    "appdescription": "DataHub is an open-source extensible metadata platform, enabling data discovery, data observability, and federated governance to help you tame the complexity of your data.  This platform is ideal for exploring, detailing, and cleansing data sets prior to ETL into the OMOP CDM."
+  },
+  {
+    "title": "Superset",
+    "colour": "#161b1f",
+    "url": "http://dev.acumenus.net:8088",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Apache Superset is a modern, enterprise-ready business intelligence web application. It is fast, lightweight, intuitive, and loaded with options that make it easy for users of all skill sets to explore and visualize their data, from simple pie charts to highly detailed deck.gl geospatial charts.  Can be used to visualize data before loading into OMOP CDM."
+  },
+  {
+    "title": "Jupyter",
+    "colour": "#fafbfc",
+    "url": "http://dev.acumenus.net:16000/lab",
+    "description": null,
+    "appid": "7d93500c86ae587b3d9f4bf1b8cec36f221c8183",
+    "appdescription": "Open source web application that allows you to create and share documents that contain live code, equations, visualizations and narrative text."
+  },
+  {
+    "title": "Scout VCF Catalog",
+    "colour": "#161b1f",
+    "url": "http://dev.acumenus.net:5000",
+    "description": null,
+    "appid": "null",
+    "appdescription": "What is Scout?\r\nSimple - Analyze variants in a simple to use web interface.\r\nAggregation - Combine results from multiple analyses and VCFs into a centralized database.\r\nCollaboration - Write comments and share cases between users and institutes."
+  },
+  {
+    "title": "Koios",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI/Koios",
+    "description": null,
+    "appid": "null",
+    "appdescription": "KOIOS is a tool developed by Odysseus Data Services Inc that allows users to combine their variant data with the OMOP Genomic Vocabulary in order to generate a set of genomic standard concept IDs from raw patient-level genomic data. KOIOS allows you to extract all relevant variant information from a given VCF file by automatically finding and parsing the relevant data found on the [ClinGen Allele]"
+  },
+  {
+    "title": "Wazuh.",
+    "colour": "#161b1f",
+    "url": "https://dev.acumenus.net/wazuh",
+    "description": null,
+    "appid": "8acd9f66ec707deda1345479909166aa1c31bdad",
+    "appdescription": "Glances is a cross-platform monitoring tool which aims to present a large amount of monitoring information through a curses or Web based interface."
+  },
+  {
+    "title": "Community Discord",
+    "colour": "#A58",
+    "url": "https://discord.gg/JkqWew3jyA",
+    "description": null,
+    "appid": "null",
+    "appdescription": "Whether you are an experienced healthcare data analyst or just starting your journey, our Discord server offers a welcoming and inclusive environment where you can connect with like-minded professionals, share your knowledge, and learn from others.  Hosted by Acumenus Data Sciences."
+  },
+  {
+    "title": "Query Library",
+    "colour": "#161b1f",
+    "url": "https://data.ohdsi.org/QueryLibrary/",
+    "description": null,
+    "appid": "null",
+    "appdescription": "R package that implements a library of standard queries that run against the OMOP-CDM. The purpose of the library is to help new users to learn how to query the CDM. The queries in the library have been approved by the OHDSI community. The query library will be mainly used for training purposes, but will also be a valuable resource for the experienced users."
+  },
+  {
+    "title": "OHDSI GitHub",
+    "colour": "#161b1f",
+    "url": "https://github.com/OHDSI",
+    "description": null,
+    "appid": "null",
+    "appdescription": null
+  }
+]
