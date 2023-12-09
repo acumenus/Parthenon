@@ -1,0 +1,41 @@
+version: '3.7'
+
+services:
+  caddy:
+    image: caddy:latest
+    container_name: "parthenon-caddy"
+    ports:
+      - "80:80"   # HTTP
+      - "443:443" # HTTPS
+    volumes:
+      - /portainer/Files/AppData/Config/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - proxy
+
+  heimdall:
+    image: "linuxserver/heimdall:latest"
+    container_name: "heimdall"
+    restart: "always"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York # Replace with your timezone
+      - APP_NAME=Parthenon
+    volumes:
+      - "/portainer/Files/AppData/Config/Heimdall:/config"
+      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon-16x16.png:/var/www/localhost/heimdall/public/favicon-16x16.png"
+      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon-32x32.png:/var/www/localhost/heimdall/public/favicon-32x32.png"
+      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon.ico:/var/www/localhost/heimdall/public/favicon.ico"
+
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    name: proxy
+
+volumes:
+  caddy_data:
+  caddy_config:

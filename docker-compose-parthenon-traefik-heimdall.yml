@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+
+  traefik:
+    image: "docker.io/library/traefik:v2.10.7"
+    container_name: "traefik2"
+    restart: "always"
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.email=sudoshi@mac.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+    expose:
+      - 80
+      - 443
+    volumes:
+      - "/letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/portainer/Files/AppData/Config/traefik/config.yml:/etc/traefik/config.yml:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.acumenus.net`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=myresolver"
+      - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=acumenus:$$apr1$$dNpOAWgT$$.1LJts2Nk6fdwFqJXIgWi0"
+    networks:
+      - traefik-proxy
+
+  heimdall:
+    image: "linuxserver/heimdall:latest"
+    container_name: "heimdall"
+    restart: "always"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York # Replace with your timezone
+      - APP_NAME=Parthenon
+    volumes:
+      - "/portainer/Files/AppData/Config/Heimdall:/config"
+      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon-16x16.png:/var/www/localhost/heimdall/public/favicon-16x16.png"
+      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon-32x32.png:/var/www/localhost/heimdall/public/favicon-32x32.png"
+      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon.ico:/var/www/localhost/heimdall/public/favicon.ico"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.heimdall.rule=Host(`dev.acumenus.net`)"
+      - "traefik.http.routers.heimdall.entrypoints=websecure"
+      - "traefik.http.routers.heimdall.tls.certresolver=myresolver"
+      - "traefik.http.routers.heimdall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+      - "traefik.http.services.heimdall.loadbalancer.server.port=80"
+    networks:
+      - traefik-proxy
+
+networks:
+  traefik-proxy:
+    external: true
+
+
