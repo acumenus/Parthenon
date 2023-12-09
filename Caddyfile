@@ -1,0 +1,21 @@
+{
+    email sudoshi@mac.com
+}
+
+dev.acumenus.net {
+    reverse_proxy traefik:8585
+}
+
+broadsea.acumenus.net {
+    reverse_proxy traefik:8585
+}
+
+perseus.acumenus.net {
+    reverse_proxy nginx:80
+}
+
+# Redirect HTTP to HTTPS
+http:// {
+    redir https://{host}{uri}
+}
+
