@@ -517,13 +517,157 @@ services:
       - wazuh.indexer:wazuh.indexer
       - wazuh.manager:wazuh.manager
 
+###openldap
+
+  openldap:
+    image: docker.io/bitnami/openldap:2.6
+    container_name: ohdsi-openldap
+    ports:
+      - '1389:1389'
+      - '1636:1636'
+    environment:
+      LDAP_ADMIN_USERNAME: ldapadmin
+      LDAP_ADMIN_PASSWORD: ldapadmin
+    volumes:
+      - 'openldap-data:/bitnami/openldap'
+    labels:
+      - "traefik.enable=true"
+
 ###LAM
+
+ldap-account-manager:
+    image: ldapaccountmanager/lam:latest
+    container_name: ldap-account-manager
+    environment:
+      SECURITY_AUTH_LDAP_ENABLED: "true"
+      SECURITY_LDAP_DN: "cn={0},ou=users,dc=example,dc=org"
+      SECURITY_LDAP_URL: "ldap://openldap:1389"
+      SECURITY_LDAP_BASEDN: "ou=users,dc=example,dc=org"
+      SECURITY_LDAP_SYSTEM_USERNAME: "ldapadmin"
+      SECURITY_LDAP_SYSTEM_PASSWORD: "ldapadmin"
+      SECURITY_LDAP_SEARCHSTRING: "(&(objectClass=*)(commonName={0}))"
+      SECURITY_LDAP_USERMAPPING_DISPLAYNAMEATTR: "displayname"
+      SECURITY_LDAP_USERMAPPING_FIRSTNAMEATTR: "givenName"
+      SECURITY_LDAP_USERMAPPING_MIDDLENAMEATTR: "initials"
+      SECURITY_LDAP_USERMAPPING_LASTNAMEATTR: "sn"
+      SECURITY_LDAP_USERMAPPING_USERNAMEATTR: "cn"
+      SECURITY_LDAP_USERIMPORT_USERNAMEATTR: "cn"
+      SECURITY_LDAP_USERIMPORT_LOGINATTR: "uid"
+      SECURITY_LDAP_SEARCHBASE: "ou=users,dc=example,dc=org"
+    command: /bin/sh -c "a2enconf lam-httpd && apache2ctl -DFOREGROUND"
+    volumes:
+      - 'ldap-account-manager-data:/var/lib/ldap-account-manager/config'
+      - './ldap-account-manager/apache/lam-httpd.conf:/etc/apache2/conf-available/lam-httpd.conf'
 
 ###pgAdmin4
 
-###Authentik
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    ports:
+      - '5050'
+    environment:
+      PGADMIN_LISTEN_ADDRESS: '0.0.0.0'
+      PGADMIN_LISTEN_PORT: 5050
+      PGADMIN_DEFAULT_EMAIL: sudoshi@acumenus.io
+      PGADMIN_DEFAULT_PASSWORD: Acumenus321$%
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'True'
+      PGADMIN_CONFIG_LOGIN_BANNER: '"Authorised users only!"'
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: '10'
+      APPLICATION_ROOT: /pgadmin4
+    volumes:
+      - 'pgadmin4-data:/var/lib/pgadmin4'
 
-###Portainer
+###Authentik
+  postgresql:
+    image: docker.io/library/postgres:12-alpine
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASS:?database password required}
+      POSTGRES_USER: ${PG_USER:-authentik}
+      POSTGRES_DB: ${PG_DB:-authentik}
+    env_file:
+      - .env
+  redis:
+    image: docker.io/library/redis:alpine
+    command: --save 60 1 --loglevel warning
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - redis:/data
+  server:
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2023.10.4}
+    restart: always
+    command: server
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+    volumes:
+      - ./media:/media
+      - ./custom-templates:/templates
+    env_file:
+      - .env
+    ports:
+      #- "${COMPOSE_PORT_HTTP:-7000}:9000"
+      - "${COMPOSE_PORT_HTTPS:-7443}:9443"
+    depends_on:
+      - postgresql
+      - redis
+  worker:
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2023.10.4}
+    restart: always
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+    # `user: root` and the docker socket volume are optional.
+    # See more for the docker socket integration here:
+    # https://goauthentik.io/docs/outposts/integrations/docker
+    # Removing `user: root` also prevents the worker from fixing the permissions
+    # on the mounted folders, so when removing this make sure the folders have the correct UID/GID
+    # (1000:1000 by default)
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./media:/media
+      - /etc/letsencrypt:/certs
+      - ./custom-templates:/templates
+    env_file:
+      - .env
+    depends_on:
+      - postgresql
+      - redis
+
+###Portainer  --- change to portainer-ce:latest or get free (3node) business edition license
+
+  portainer:
+    image: portainer/portainer-be:latest
+    ports:
+      - 7000:8000 
+      - 9443:9443
+      volumes:
+        - data:/data
+        - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
 
 ##################################################
 #
@@ -571,9 +715,18 @@ volumes:
   wazuh-dashboard-config:
   wazuh-dashboard-custom:
   ###LAM
-
+  ldap-account-manager-data:
+    name: ldap-account-manager-data
   ###pgAdmin4
-  
+  pgadmin4-data:
+    name: pgadmin4-data
   ###Authentik
-  
+  database:
+    driver: local
+  redis:
+    driver: local
+  ###openldap
+  openldap-data:
+    name: openldap-data
   ###Portainer
+  data:
