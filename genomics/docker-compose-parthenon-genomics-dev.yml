@@ -1,0 +1,27 @@
+### Caddy as Prime RP
+### Parthenon Utilities
+
+
+##################################################
+#
+#
+#   PARTHENON GENOMIC INFORMATICS
+#
+#
+##################################################
+
+
+##################################################
+#
+#
+#   PARTHENON GENOMICS NETWORKS AND VOLUMES
+#
+#
+##################################################
+
+networks:
+  proxy:
+    name: proxy
+
+volumes:
+
