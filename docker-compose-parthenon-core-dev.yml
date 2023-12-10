@@ -1,7 +1,6 @@
 ### Caddy as Prime RP + Traefik as sub RP for Broadsea + Ngnix as sub RP for Perseus
 ### Heimdall as Launch Page for Parthenon
 
-
 version: '3.7'
 
 services:
@@ -12,7 +11,7 @@ services:
       - "80:80"   # HTTP
       - "443:443" # HTTPS
     volumes:
-      - /portainer/Files/AppData/Config/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     networks:
@@ -36,11 +35,10 @@ services:
       - TZ=America/New_York # Replace with your timezone
       - APP_NAME=Parthenon
     volumes:
-      - "/portainer/Files/AppData/Config/Heimdall:/config"
-      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon-16x16.png:/var/www/localhost/heimdall/public/favicon-16x16.png"
-      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon-32x32.png:/var/www/localhost/heimdall/public/favicon-32x32.png"
-      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon.ico:/var/www/localhost/heimdall/public/favicon.ico"
-
+      - "./heimdall:/config"
+      - "./heimdall/favicons/favicon-16x16.png:/var/www/localhost/heimdall/public/favicon-16x16.png"
+      - "./heimdall/favicons/favicon-32x32.png:/var/www/localhost/heimdall/public/favicon-32x32.png"
+      - "./heimdall/favicons/favicon.ico:/var/www/localhost/heimdall/public/favicon.ico"
     networks:
       - proxy
 

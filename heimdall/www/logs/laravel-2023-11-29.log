@@ -1,0 +1,45 @@
+[2023-11-29 03:13:03] local.DEBUG: Get app triggered for: 8acd9f66ec707deda1345479909166aa1c31bdad  
+[2023-11-29 03:13:03] local.DEBUG: Download triggered for stdClass Object
+(
+    [appid] => 8acd9f66ec707deda1345479909166aa1c31bdad
+    [name] => Glances
+    [website] => https://nicolargo.github.io/glances
+    [license] => GNU Lesser General Public License v3.0 only
+    [description] => Glances is a cross-platform monitoring tool which aims to present a large amount of monitoring information through a curses or Web based interface.
+    [enhanced] => 
+    [tile_background] => dark
+    [icon] => glances.png
+    [sha] => 06c12bbb9bfd7839ba8e22d6166fb1ca36796dbc
+    [class] => \App\SupportedApps\Glances\Glances
+)
+  
+[2023-11-29 03:36:08] local.DEBUG: Get app triggered for: f3319963720d2293ed504bb1f5c1c4a879147a34  
+[2023-11-29 03:36:08] local.DEBUG: Download triggered for stdClass Object
+(
+    [appid] => f3319963720d2293ed504bb1f5c1c4a879147a34
+    [name] => Dashdot
+    [website] => https://getdashdot.com/
+    [license] => MIT License
+    [description] => Dash. (or Dashdot) is a modern server dashboard, running on the latest tech, designed with glassmorphism in mind. It is intended to be used for smaller VPS and private servers.
+    [enhanced] => 
+    [tile_background] => dark
+    [icon] => dashdot.png
+    [sha] => 5d0f94065a29b773d0234e683d0f784e56379c03
+    [class] => \App\SupportedApps\Dashdot\Dashdot
+)
+  
+[2023-11-29 04:23:03] local.DEBUG: Get app triggered for: 601c9ad5341b0ba351540520eabd0a6cb1526a86  
+[2023-11-29 04:23:03] local.DEBUG: Download triggered for stdClass Object
+(
+    [appid] => 601c9ad5341b0ba351540520eabd0a6cb1526a86
+    [name] => FileBot
+    [website] => https://www.filebot.net
+    [license] => Commercial
+    [description] => FileBot is the ultimate tool for renaming and organizing your movies, TV shows and Anime. Match and rename media files against online databases, download artwork and cover images, fetch subtitles, write metadata, and more, all at once in matter of seconds. It's smart and just works.
+    [enhanced] => 
+    [tile_background] => dark
+    [icon] => filebot.svg
+    [sha] => 1f152c107a112ec62742bf2c0c50c84cb83b8bfe
+    [class] => \App\SupportedApps\FileBot\FileBot
+)
+  

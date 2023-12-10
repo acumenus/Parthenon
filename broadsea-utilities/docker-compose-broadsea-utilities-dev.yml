@@ -1,0 +1,326 @@
+### Caddy as Prime RP
+### Broadsea Utilities
+
+
+##################################################
+#
+#
+#   BROADSEA UTILITIES
+#
+#
+##################################################
+
+  broadsea-solr-vocab:
+    profiles: [ "solr-vocab-no-import", "solr-vocab-with-import" ]
+    container_name: solr-vocab
+    restart: unless-stopped
+    image: solr:8.11.1
+    secrets:
+      - SOLR_VOCAB_JDBC_PASSWORD
+    environment: 
+      SOLR_VOCAB_VERSION: ${SOLR_VOCAB_VERSION}
+      SOLR_VOCAB_JDBC_DRIVER_PATH: ${SOLR_VOCAB_JDBC_DRIVER_PATH}
+      SOLR_VOCAB_JDBC_URL: ${SOLR_VOCAB_JDBC_URL}
+      SOLR_VOCAB_JDBC_USER: ${SOLR_VOCAB_JDBC_USER}
+    volumes:
+      - ${SOLR_VOCAB_JDBC_FILE_PATH}:/opt/solr-8.11.1/server/lib/solr_jdbc_driver.jar:ro
+      - ./solr:/tmp/solr_config:ro
+      - ./solr/docker-entrypoint.sh:/entrypoint.sh
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    labels:
+      - "traefik.enable=true"
+    healthcheck:
+      test: curl --fail ${SOLR_VOCAB_ENDPOINT} || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  broadsea-solr-vocab-run-import:
+    profiles: [ "solr-vocab-with-import" ]
+    container_name: solr-vocab-run-import
+    image: curlimages/curl
+    depends_on:
+      broadsea-solr-vocab:
+        condition: service_healthy
+    command: curl -d "vocab_database_schema=${SOLR_VOCAB_DATABASE_SCHEMA}" -X POST ${SOLR_VOCAB_ENDPOINT}/${SOLR_VOCAB_VERSION}/dataimport?command=full-import&entity=concept
+
+  broadsea-ares:
+    profiles: [ "ares" ]
+    container_name: broadsea-ares
+    restart: unless-stopped
+    build:
+      context: https://github.com/OHDSI/Ares.git
+    volumes:
+      - ${ARES_DATA_FOLDER}:/usr/share/nginx/html/ares/data:ro
+    labels:
+      - "traefik.enable=true"
+
+
+  broadsea-omop-vocab-load:
+    profiles: [ "omop-vocab-pg-load" ]
+    container_name: omop-vocab-load
+    extends:
+      file: "./compose/postgres-load.yml"
+      service: broadsea-postgres-load
+    secrets:
+      - VOCAB_PG_PASSWORD
+      - UMLS_API_KEY
+    environment:
+      VOCAB_PG_HOST: ${VOCAB_PG_HOST}
+      VOCAB_PG_DATABASE: ${VOCAB_PG_DATABASE}
+      VOCAB_PG_SCHEMA: ${VOCAB_PG_SCHEMA}
+      VOCAB_PG_USER: ${VOCAB_PG_USER}
+    volumes:
+      - ./omop_vocab/scripts:/tmp/scripts
+      - ${VOCAB_PG_FILES_PATH}:/tmp/files
+    entrypoint: ["sh", "/tmp/scripts/load_omop_vocab.sh" ]
+
+
+  broadsea-phoebe-load:
+    profiles: [ "phoebe-pg-load" ]
+    container_name: broadsea-phoebe-load
+    extends:
+      file: "./compose/postgres-load.yml"
+      service: broadsea-postgres-load
+    secrets:
+      - PHOEBE_PG_PASSWORD
+    environment:
+      PHOEBE_PG_HOST: ${PHOEBE_PG_HOST}
+      PHOEBE_PG_DATABASE: ${PHOEBE_PG_DATABASE}
+      PHOEBE_PG_SCHEMA: ${PHOEBE_PG_SCHEMA}
+      PHOEBE_PG_USER: ${PHOEBE_PG_USER}
+    volumes:
+      - ./phoebe:/tmp
+    entrypoint: ["sh", "/tmp/load_phoebe.sh" ]
+
+
+  # broadsea-arachne-execution-engine:
+  #   profiles: [ "arachne-execution-engine" ]
+  #   build: ./arachne
+  #   container_name: broadsea-arachne-execution-engine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8888:8888"
+  #   privileged: true
+  #   platform: "linux/amd64"
+  #   volumes:
+  #     - ./execution_engine:/dist
+  #   labels:
+  #    - "traefik.enable=true"
+
+
+  # Security providers for testing purposes
+
+  broadsea-openldap:
+    profiles: [ "openldap" ]
+    image: docker.io/bitnami/openldap:2.6
+    container_name: broadsea-openldap
+    restart: unless-stopped
+    secrets:
+      - OPENLDAP_ADMIN_PASSWORD
+      - OPENLDAP_ACCOUNT_PASSWORDS
+    volumes:
+      - ./openldap/entrypoint.sh:/tmp/entrypoint.sh
+    environment:
+      LDAP_ADMIN_USERNAME: ${SECURITY_LDAP_SYSTEM_USERNAME}
+      LDAP_ADMIN_PASSWORD_FILE: /run/secrets/OPENLDAP_ADMIN_PASSWORD
+      LDAP_USERS: ${OPENLDAP_USERS}
+    ports:
+      - '1389:1389'
+      - '1636:1636'
+    entrypoint: ["/bin/bash", "/tmp/entrypoint.sh"]
+    command: [ "/opt/bitnami/scripts/openldap/run.sh" ]
+
+  # shiny server options (open-source and commercial)
+
+  broadsea-open-shiny-server:
+    profiles: [ "open-shiny-server" ]
+    image: rocker/shiny:4.3.0
+    platform: "linux/amd64"
+    container_name: broadsea-open-shiny-server
+    restart: unless-stopped
+    ports:
+      - "3838:3838"
+    volumes:
+      - ${OPEN_SHINY_SERVER_APP_ROOT}:/srv/shiny-server/apps:ro
+    labels:
+      - "traefik.enable=true" 
+
+  broadsea-posit-connect:
+    profiles: [ "posit-connect" ]
+    image: rstudio/rstudio-connect
+    platform: "linux/amd64"
+    container_name: broadsea-posit-connect
+    restart: unless-stopped
+    ports:
+      - "3939:3939"
+    privileged: true
+    environment:
+      RSC_LICENSE_SERVER: ${POSIT_CONNECT_LICENSE_SERVER}
+      R_VERSION: ${POSIT_CONNECT_R_VERSION}
+    volumes:
+      - ${POSIT_CONNECT_LICENSE_FILE}:/etc/rstudio-connect/license.lic:ro
+      - ${POSIT_CONNECT_GCFG_FILE}:/etc/rstudio-connect/rstudio-connect.gcfg:ro
+    labels:
+      - "traefik.enable=true"
+
+# CDM Post-Processing ---------------
+
+  broadsea-run-achilles:
+    profiles: [ "cdm-postprocessing", "achilles" ]
+    build: ./achilles
+    platform: "linux/amd64"
+    container_name: broadsea-run-achilles
+    secrets:
+      - CDM_CONNECTIONDETAILS_PASSWORD
+      - GITHUB_PAT
+    volumes:
+      - jdbc-drivers-data:/jdbc
+      - cdm-postprocessing-data:/postprocessing
+      - ./postprocessing/init.R:/postprocessing/init.R
+      - ./achilles/run_achilles.R:/postprocessing/achilles/scripts/${CDM_DATABASE_SCHEMA}.R
+    environment:
+      CDM_CONNECTIONDETAILS_DBMS: ${CDM_CONNECTIONDETAILS_DBMS}
+      CDM_CONNECTIONDETAILS_USER: ${CDM_CONNECTIONDETAILS_USER}
+      CDM_CONNECTIONDETAILS_SERVER: ${CDM_CONNECTIONDETAILS_SERVER}
+      CDM_CONNECTIONDETAILS_PORT: ${CDM_CONNECTIONDETAILS_PORT}
+      CDM_CONNECTIONDETAILS_EXTRA_SETTINGS: ${CDM_CONNECTIONDETAILS_EXTRA_SETTINGS}
+      CDM_VERSION: ${CDM_VERSION}
+      CDM_SOURCE_NAME: ${CDM_SOURCE_NAME}
+      CDM_DATABASE_SCHEMA: ${CDM_DATABASE_SCHEMA}
+      RESULTS_DATABASE_SCHEMA: ${RESULTS_DATABASE_SCHEMA}
+      SCRATCH_DATABASE_SCHEMA: ${SCRATCH_DATABASE_SCHEMA}
+      VOCAB_DATABASE_SCHEMA: ${VOCAB_DATABASE_SCHEMA}
+      TEMP_EMULATION_SCHEMA: ${TEMP_EMULATION_SCHEMA}
+
+      ACHILLES_ANALYSIS_IDS: ${ACHILLES_ANALYSIS_IDS}
+      ACHILLES_CREATE_TABLE: ${ACHILLES_CREATE_TABLE}
+      ACHILLES_SMALL_CELL_COUNT: ${ACHILLES_SMALL_CELL_COUNT}
+      ACHILLES_CREATE_INDICES: ${ACHILLES_CREATE_INDICES}
+      ACHILLES_NUM_THREADS: ${ACHILLES_NUM_THREADS}
+      ACHILLES_TEMP_ACHILLES_PREFIX: ${ACHILLES_TEMP_ACHILLES_PREFIX}
+      ACHILLES_DROP_SCRATCH_TABLES: ${ACHILLES_DROP_SCRATCH_TABLES}
+      ACHILLES_VERBOSE_MODE: ${ACHILLES_VERBOSE_MODE}
+      ACHILLES_OPTIMIZE_ATLAS_CACHE: ${ACHILLES_OPTIMIZE_ATLAS_CACHE}
+      ACHILLES_DEFAULT_ANALYSES_ONLY: ${ACHILLES_DEFAULT_ANALYSES_ONLY}
+      ACHILLES_UPDATE_GIVEN_ANALYSES_ONLY: ${ACHILLES_UPDATE_GIVEN_ANALYSES_ONLY}
+      ACHILLES_EXCLUDE_ANALYSIS_IDS: ${ACHILLES_EXCLUDE_ANALYSIS_IDS}
+      ACHILLES_SQL_ONLY: ${ACHILLES_SQL_ONLY}
+    entrypoint: ["Rscript", "/postprocessing/achilles/scripts/${CDM_DATABASE_SCHEMA}.R" ]
+
+  broadsea-run-dqd:
+    profiles: [ "cdm-postprocessing", "dqd" ]
+    build: ./dqd
+    platform: "linux/amd64"
+    container_name: broadsea-run-dqd
+    secrets:
+      - CDM_CONNECTIONDETAILS_PASSWORD
+      - GITHUB_PAT
+    volumes:
+      - jdbc-drivers-data:/jdbc
+      - cdm-postprocessing-data:/postprocessing
+      - ./postprocessing/init.R:/postprocessing/init.R
+      - ./dqd/run_dqd.R:/postprocessing/dqd/scripts/${CDM_DATABASE_SCHEMA}.R
+    environment:
+      CDM_CONNECTIONDETAILS_DBMS: ${CDM_CONNECTIONDETAILS_DBMS}
+      CDM_CONNECTIONDETAILS_USER: ${CDM_CONNECTIONDETAILS_USER}
+      CDM_CONNECTIONDETAILS_SERVER: ${CDM_CONNECTIONDETAILS_SERVER}
+      CDM_CONNECTIONDETAILS_PORT: ${CDM_CONNECTIONDETAILS_PORT}
+      CDM_CONNECTIONDETAILS_EXTRA_SETTINGS: ${CDM_CONNECTIONDETAILS_EXTRA_SETTINGS}
+      CDM_VERSION: ${CDM_VERSION}
+      CDM_SOURCE_NAME: ${CDM_SOURCE_NAME}
+      CDM_DATABASE_SCHEMA: ${CDM_DATABASE_SCHEMA}
+      RESULTS_DATABASE_SCHEMA: ${RESULTS_DATABASE_SCHEMA}
+      VOCAB_DATABASE_SCHEMA: ${VOCAB_DATABASE_SCHEMA}
+
+      DQD_NUM_THREADS: ${DQD_NUM_THREADS}
+      DQD_SQL_ONLY: ${DQD_SQL_ONLY}
+      DQD_SQL_ONLY_UNION_COUNT: ${DQD_SQL_ONLY_UNION_COUNT}
+      DQD_SQL_ONLY_INCREMENTAL_INSERT: ${DQD_SQL_ONLY_INCREMENTAL_INSERT}
+      DQD_VERBOSE_MODE: ${DQD_VERBOSE_MODE}
+      DQD_WRITE_TO_TABLE: ${DQD_WRITE_TO_TABLE}
+      DQD_WRITE_TABLE_NAME: ${DQD_WRITE_TABLE_NAME}
+      DQD_WRITE_TO_CSV: ${DQD_WRITE_TO_CSV}
+      DQD_CSV_FILE: ${DQD_CSV_FILE}
+      DQD_CHECK_LEVELS: ${DQD_CHECK_LEVELS}
+      DQD_CHECK_NAMES: ${DQD_CHECK_NAMES}
+      DQD_COHORT_DEFINITION_ID: ${DQD_COHORT_DEFINITION_ID}
+      DQD_COHORT_DATABASE_SCHEMA: ${DQD_COHORT_DATABASE_SCHEMA}
+      DQD_COHORT_TABLE_NAME: ${DQD_COHORT_TABLE_NAME}
+      DQD_TABLES_TO_EXCLUDE: ${DQD_TABLES_TO_EXCLUDE}
+      DQD_TABLE_CHECK_THRESHOLD_LOC: ${DQD_TABLE_CHECK_THRESHOLD_LOC}
+      DQD_FIELD_CHECK_THRESHOLD_LOC: ${DQD_FIELD_CHECK_THRESHOLD_LOC}
+      DQD_CONCEPT_CHECK_THRESHOLD_LOC: ${DQD_CONCEPT_CHECK_THRESHOLD_LOC}
+    entrypoint: ["Rscript", "/postprocessing/dqd/scripts/${CDM_DATABASE_SCHEMA}.R" ]
+
+  broadsea-run-aresindexer-only:
+    profiles: [ "aresindexer" ]
+    extends: 
+      file: "./compose/aresindexer.yml"
+      service: broadsea-run-aresindexer
+
+  broadsea-run-aresindexer-after:
+    profiles: [ "cdm-postprocessing" ]
+    extends: 
+      file: "./compose/aresindexer.yml"
+      service: broadsea-run-aresindexer
+    depends_on:
+      broadsea-run-achilles:
+        condition: service_completed_successfully
+      broadsea-run-dqd:
+        condition: service_completed_successfully
+
+  broadsea-dbt:
+    profiles: [ "dbt" ]
+    image: ohdsi/broadsea-dbt
+    container_name: broadsea-dbt
+    platform: "linux/amd64"
+    restart: unless-stopped
+    volumes:
+      - ${DBT_PROJECT_PATH}:/usr/app
+      - ${DBT_PROFILE_PATH}:/root/.dbt/
+
+  # broadsea-atlas-add-cdm:
+  #   profiles: [ "atlas-add-cdm" ]
+  #   build:
+  #     context: ./atlas/add_cdm
+  #   container_name: atlas-add-cdm
+  #   volumes:
+  #     - ./atlas/add_cdm/add_new_cdm.sh:/tmp/add_new_cdm.sh:ro
+  #     - ./atlas/add_cdm/new_cdm_template.json:/tmp/new_cdm_template.json:ro
+  #   entrypoint: ["sh", "/tmp/add_new_cdm.sh"]
+  #   secrets:
+  #     - ATLAS_NEW_CDMSOURCE_PASSWORD
+  #     - ATLAS_ADMIN_PASSWORD
+  #   environment:
+  #     NEW_CDMSOURCE_NAME: ${NEW_CDMSOURCE_NAME}
+  #     NEW_CDMSOURCE_KEY: ${NEW_CDMSOURCE_KEY}
+  #     NEW_CDMSOURCE_DIALECT: ${NEW_CDMSOURCE_DIALECT}
+  #     NEW_CDMSOURCE_CONNECTIONSTRING: ${NEW_CDMSOURCE_CONNECTIONSTRING}
+  #     NEW_CDMSOURCE_USERNAME: ${NEW_CDMSOURCE_USERNAME}
+  #     NEW_CDMSOURCE_CDMSCHEMA: ${NEW_CDMSOURCE_CDMSCHEMA}
+  #     NEW_CDMSOURCE_VOCABSCHEMA: ${NEW_CDMSOURCE_VOCABSCHEMA}
+  #     NEW_CDMSOURCE_RESULTSSCHEMA: ${NEW_CDMSOURCE_RESULTSSCHEMA}
+  #     HTTP_TYPE: ${HTTP_TYPE}
+  #     BROADSEA_HOST: ${BROADSEA_HOST}
+  #     ATLAS_ADMIN_USERNAME: ${ATLAS_ADMIN_USERNAME}
+
+##################################################
+#
+#
+#   BROADSEA UTILITIES NETWORKS AND VOLUMES
+#
+#
+##################################################
+
+networks:
+  proxy:
+    name: proxy
+
+volumes:
+  openldap-data:
+    name: openldap-data
+  jdbc-drivers-data:
+    name: jdbc-drivers-data
+  cdm-postprocessing-data:
+    name: cdm-postprocessing-data

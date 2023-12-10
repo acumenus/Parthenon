@@ -14,17 +14,6 @@ perseus.acumenus.net {
     reverse_proxy nginx:80
 }
 
-netdata.acumenus.net {
-  reverse_proxy netdata:19999
-  tls sudoshi@mac.com
-}
-
-basicauth netdata.acumenus.net {
-	#Bob $2a$14$Zkx19XLiW6VYouLHR5NmfOFU0z2GTNmpkT/5qqR7hx4IjWJPDhjvG
-    #use bcrypt to set user/pass (current= Bob:hiccup)
-}
-
-
 # Redirect HTTP to HTTPS
 http:// {
     redir https://{host}{uri}

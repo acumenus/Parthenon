@@ -1,0 +1,111 @@
+[2023-11-20 15:12:31] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:12:32] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:12:32] local.DEBUG: Update of all apps triggered!  
+[2023-11-20 15:12:32] local.DEBUG: Update of all apps finished!  
+[2023-11-20 15:12:32] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:12:49] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:13:09] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:19:21] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:19:34] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:19:34] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:19:51] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:20:12] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:20:18] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:20:18] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:20:18] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:20:28] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:20:31] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:20:33] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:22:34] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:22:44] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:22:51] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:22:52] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:23:09] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:24:46] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:24:48] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:24:50] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:25:03] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:25:34] local.DEBUG: Process Apps dispatched  
+[2023-11-20 15:25:34] local.DEBUG: Get app triggered for: 07b796b3a10eaa8b6f485ed2379187a39400b459  
+[2023-11-20 15:25:34] local.DEBUG: Download triggered for stdClass Object
+(
+    [appid] => 07b796b3a10eaa8b6f485ed2379187a39400b459
+    [name] => Portainer
+    [website] => https://portainer.io
+    [license] => zlib License
+    [description] => Portainer is a simple management solution for Docker. Easily manage your Docker hosts and Docker Swarm clusters via Portainer web user interface.
+    [enhanced] => 1
+    [tile_background] => dark
+    [icon] => portainer.svg
+    [sha] => 94a81b07f372894d0b6db212e2bb33681a1c839c
+    [class] => \App\SupportedApps\Portainer\Portainer
+)
+  
+[2023-11-20 15:28:42] local.DEBUG: Get app triggered for: 34088ce0402f28fca7286fc2d833c0d68b0d28cf  
+[2023-11-20 15:28:42] local.DEBUG: Download triggered for stdClass Object
+(
+    [appid] => 34088ce0402f28fca7286fc2d833c0d68b0d28cf
+    [name] => authentik
+    [website] => https://goauthentik.io
+    [license] => GNU General Public License v3.0 or later
+    [description] => authentik is an open-source Identity Provider focused on flexibility and versatility. You can use authentik in an existing environment to add support for new protocols, implement sign-up/recovery/etc. in your application so you don't have to deal with it, and many other things.
+    [enhanced] => 
+    [tile_background] => light
+    [icon] => authentik.svg
+    [sha] => a1a09a62a9f9cd82095680f2596cc0a518dd5e14
+    [class] => \App\SupportedApps\authentik\authentik
+)
+  
+[2023-11-20 15:30:26] local.DEBUG: Get app triggered for: a83e2ce54bbef3bef63aa7f02b08dbda7fdae4c5  
+[2023-11-20 15:30:26] local.DEBUG: Download triggered for stdClass Object
+(
+    [appid] => a83e2ce54bbef3bef63aa7f02b08dbda7fdae4c5
+    [name] => Traefik
+    [website] => https://traefik.io
+    [license] => MIT License
+    [description] => Træfik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy. Træfik integrates with your existing infrastructure components and configures itself automatically and dynamically.
+    [enhanced] => 1
+    [tile_background] => dark
+    [icon] => traefik.svg
+    [sha] => b61c6737c460e1688918a34aebcbe5240a34181e
+    [class] => \App\SupportedApps\Traefik\Traefik
+)
+  
+[2023-11-20 16:11:04] local.DEBUG: Get app triggered for: 43784e464f66bfc0254a3bad48939f14a70c878e  
+[2023-11-20 16:11:04] local.DEBUG: Download triggered for stdClass Object
+(
+    [appid] => 43784e464f66bfc0254a3bad48939f14a70c878e
+    [name] => pgAdmin
+    [website] => https://www.pgadmin.org
+    [license] => PostgreSQL License
+    [description] => pgAdmin is a feature rich open-source administration and development platform for PostgreSQL.
+    [enhanced] => 
+    [tile_background] => dark
+    [icon] => pgadmin.png
+    [sha] => 9f10a4132859247241b29512b7e7963ed27d962f
+    [class] => \App\SupportedApps\pgAdmin\pgAdmin
+)
+  
+[2023-11-20 16:27:53] local.DEBUG: Get app triggered for: 48b8edcabb38cf25b257b7da1042eb8f19d16248  
+[2023-11-20 16:27:53] local.DEBUG: Download triggered for stdClass Object
+(
+    [appid] => 48b8edcabb38cf25b257b7da1042eb8f19d16248
+    [name] => LemonLDAP::NG
+    [website] => https://lemonldap-ng.org/welcome
+    [license] => GNU General Public License v2.0 or later
+    [description] => LemonLDAP::NG is a complete and modular Web-SSO system that can run with
+reverse-proxies or directly on application webservers. It can be used in
+conjunction with OpenID-Connect, CAS and SAML systems as identity or
+service provider. It can also be used as proxy between those federation
+systems.
+It manages both authentication and authorization and provides headers for
+accounting. So you can have a full AAA protection. Authorizations are built by
+associating a regular expression and a rule. Regular expression is applied on
+the requested URL and the rule calculates if the user is authorized.
+    [enhanced] => 
+    [tile_background] => light
+    [icon] => lemonldapng.png
+    [sha] => 90920fb7a2a174434f04cf16f343fac560127fa0
+    [class] => \App\SupportedApps\LemonLDAPNG\LemonLDAPNG
+)
+  
