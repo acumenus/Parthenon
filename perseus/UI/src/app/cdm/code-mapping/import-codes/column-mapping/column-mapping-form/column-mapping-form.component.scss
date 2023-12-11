@@ -1,0 +1,20 @@
+@import "variables";
+@import "mixins";
+
+.column-mapping-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 15px;
+  padding: 0 64px;
+
+  &__control {
+    @include perseus-control();
+    @include form-control();
+    margin-bottom: 20px;
+  }
+}
+
+.label-required {
+  margin-left: 3px;
+  color: red !important;
+}

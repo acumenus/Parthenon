@@ -1,0 +1,49 @@
+@import 'variables';
+@import 'mixins';
+
+.apply-transformation {
+  width: 575px;
+  min-height: 640px;
+  max-height: 756px;
+  padding: 42px 35px 35px;
+  position: relative;
+  background: #FBFBFB;
+  display: flex;
+  flex-direction: column;
+
+  &__close {
+    position: absolute;
+    top: 21px;
+    right: 20px;
+  }
+
+  &__header {
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 23px;
+    color: $cdm-grey-dark;
+    display: flex;
+    align-items: center;
+
+    span {
+      margin-left: 15px;
+      font-size: 12px;
+      line-height: 15px;
+      color: #808080;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    flex: 1;
+
+    button {
+      @include cdm-button();
+      margin-right: 15px;
+      width: 80px;
+      height: 33px;
+    }
+  }
+}

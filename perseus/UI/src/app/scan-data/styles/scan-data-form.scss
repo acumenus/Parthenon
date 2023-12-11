@@ -1,0 +1,5 @@
+@import "mixins";
+
+.scan-data-form-control {
+  @include perseus-control()
+}

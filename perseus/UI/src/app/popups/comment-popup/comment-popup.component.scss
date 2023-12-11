@@ -1,0 +1,46 @@
+@import 'variables';
+@import 'mixins';
+
+.comment-popup {
+  @include perseus-popup();
+  width: 483px;
+  height: 444px;
+  padding: 26px;
+
+  &__header {
+    margin-bottom: 24px;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+
+    label {
+      @include cdm-label();
+      margin-bottom: 3px;
+    }
+
+    textarea {
+      @include perseus-text-area();
+      width: 100%;
+    }
+
+    &__actions {
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+
+      button {
+        height: 30px;
+        width: 80px;
+        @include cdm-button();
+        margin-right: 20px;
+
+        &.delete {
+          background: #E5E5E5;
+          color: #FF4646;
+        }
+      }
+    }
+  }
+}

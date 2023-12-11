@@ -1,0 +1,8 @@
+docker run -p 5050:443 \
+-v ~/home/docker_volumes/certs/hostname.crt:/certs/server.cert \
+-v ~/home/docker_volumes/certs/hostname.key:/certs/server.key \
+-v /tmp/servers.json:/pgadmin4/servers.json \
+-e 'PGADMIN_DEFAULT_EMAIL=user@email.com' \
+-e 'PGADMIN_DEFAULT_PASSWORD=StrongPassword' \
+-e 'PGADMIN_ENABLE_TLS=True' \
+-d dpage/pgadmin4

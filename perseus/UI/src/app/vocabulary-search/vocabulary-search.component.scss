@@ -1,0 +1,117 @@
+@import "mixins";
+@import "variables";
+
+$row-height: 32px;
+$header-border: 1px solid rgba(230, 230, 230, .2);
+$table-height: 385px;
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.vocabulary-search {
+  @include perseus-bottom-content-panel();
+
+  &__chips {
+    max-height: 98px;
+    padding-top: 15px;
+    padding-left: 38px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__filters {
+    @include search-grid-side-panel-filters();
+    padding-top: 20px;
+
+    &__filter-wrapper {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 8px;
+
+      &__point {
+        padding: 0 8px 0 38px;
+      }
+    }
+  }
+
+  &__apply {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 15px;
+    padding-top: 9px;
+
+    button {
+      @include cdm-button();
+      height: 33px;
+      width: 80px;
+      margin-right: 15px;
+
+      &.clear {
+        color: #404040;
+        background-color: $cdm-grey-light;
+      }
+
+      &.apply {
+        color: #fff;
+        background-color: $blue;
+      }
+    }
+  }
+
+  &__content {
+    flex: 1;
+    padding: 17px 38px 17px 39px;
+  }
+
+  &__grid-toolbar {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__input {
+    position: relative;
+
+    svg {
+      position: absolute;
+      top: 50%;
+      bottom: 50%;
+      transform: translateY(-50%);
+      left: 10px;
+    }
+
+    input {
+      width: 500px;
+      height: 30px;
+      padding-left: 33px;
+      @include search-input();
+
+      &::placeholder {
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 18px;
+      }
+    }
+  }
+
+  &__mode {
+    padding-left: 15px;
+    width: 165px;
+    @include radio-button();
+  }
+
+  .error-row {
+    height: $table-height - $row-height - 5;
+    @include grid-error-row();
+  }
+
+  &__close {
+    position: absolute;
+    right: 17px;
+    top: 10px;
+  }
+}

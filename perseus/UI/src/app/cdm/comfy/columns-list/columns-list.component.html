@@ -1,0 +1,31 @@
+<div class="selected">
+  Selected: <span>{{selected.length}}</span>
+  <a *ngIf="selected.length"
+     (click)="deselectAll()">Deselect All</a>
+</div>
+<mat-list #columnList class="source-columns-list" role="list" dense>
+  <cdk-virtual-scroll-viewport
+    class="virtual-scroll-container"
+    itemSize="60"
+    minBufferPx="200"
+    maxBufferPx="400"
+    [style.height]="columnListHeight">
+    <mat-list-item
+      role="listitem"
+      *cdkVirtualFor="let item of uniqSourceRows; templateCacheSize: 0">
+      <div
+        class="data-item-caption"
+        highlight
+        [attr.criteria]="item.name"
+        [values]="selected"
+        (click)="onSelect(item.name)">
+        <div class="data-item" #anchor>
+          <mat-icon (click)="showColumnInfo($event, anchor, item)" class="sort rotate">sort</mat-icon>
+          <span>{{ item.name }}</span>
+          <span class="divider"></span>
+          <mat-icon color="accent" class="checked">done</mat-icon>
+        </div>
+      </div>
+    </mat-list-item>
+  </cdk-virtual-scroll-viewport>
+</mat-list>

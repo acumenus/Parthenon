@@ -1,0 +1,19 @@
+<div class="scan-dialog">
+  <div class="scan-dialog__header">
+    <h4>Data Quality Check</h4>
+    <app-close-dialog-button class="scan-dialog__header-close" (click)="onClose()"></app-close-dialog-button>
+  </div>
+
+  <div class="scan-dialog__content" [ngSwitch]="index">
+    <app-dqd-form *ngSwitchCase="0" style="width: 100%"
+                  [loading]="loading"
+                  (check)="onDataQualityCheck($event)"
+                  (cancel)="onClose()"></app-dqd-form>
+
+    <app-dqd-console-wrapper *ngSwitchCase="1" style="width: 100%"
+                             [conversion]="conversion"
+                             [project]="project"
+                             (back)="onCancel()"
+                             (close)="onClose()"></app-dqd-console-wrapper>
+  </div>
+</div>

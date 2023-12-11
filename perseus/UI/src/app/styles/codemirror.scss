@@ -1,0 +1,46 @@
+@import './variables.scss';
+
+.CodeMirror.cm-s-default {
+  border: 2px solid $cdm-grey-light;
+  box-sizing: border-box;
+  height: 250px;
+  padding: 10px 15px;
+
+  .cm-keyword {
+    color: $cdm-blue;
+    text-transform: uppercase;
+  }
+}
+
+.CodeMirror.cm-s-preview {
+  height: 119px;
+  box-sizing: border-box;
+  padding: 10px 5px;
+  border: 1px rgba(6, 107, 187, .1) solid;
+  background: #F9F9F9;
+  font-size: 14px;
+  line-height: 25px;
+  opacity: 0.7;
+
+  .cm-keyword {
+    color: $cdm-blue;
+    text-transform: uppercase;
+  }
+
+  .CodeMirror-vscrollbar {
+    margin-right: 2px;
+    border-radius: 3px;
+  }
+}
+
+.invalid .CodeMirror.cm-s-default {
+  border-color: red !important;
+}
+
+.invalid-with-border .CodeMirror.cm-s-default {
+  border: 1px solid red !important;
+}
+
+.CodeMirror-hints.default {
+  z-index: 1000;
+}

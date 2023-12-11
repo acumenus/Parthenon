@@ -1,0 +1,195 @@
+services:
+  traefik:
+    image: traefik:v2.10.5
+    container_name: traefik
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.email=sudoshi@mac.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /portainer/Files/AppData/Config/traefik/config.yml:/etc/traefik/config.yml:ro
+      - /path/to/acme.json:/acme.json
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.acumenus.net`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=myresolver"
+      - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=acumenus:$$apr1$$dNpOAWgT$$.1LJts2Nk6fdwFqJXIgWi0"
+  shareddb:
+    image: perseushub/shareddb:latest
+    build: ./shared-db
+    container_name: shareddb
+    volumes:
+      - shareddb:/data/postgres
+    ports:
+      - "5432:5432"
+  files-manager:
+    image: perseushub/files-manager:latest
+    build: ./files-manager
+    container_name: files-manager
+    ports:
+      - "10500:10500"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+  user:
+    image: perseushub/user:latest
+    build: ./user
+    container_name: user
+    environment:
+      USER_ENV: Docker
+    env_file:
+      - user/user-envs.txt
+    ports:
+      - "5001:5001"
+    depends_on:
+      - shareddb
+  backend:
+    image: perseushub/backend:latest
+    build: ./perseus-api
+    container_name: backend
+    environment:
+      PERSEUS_ENV: Docker
+    ports:
+      - "5004:5004"
+    depends_on:
+      - shareddb
+      - files-manager
+  frontend:
+    image: perseushub/frontend:latest
+    build:
+      context: ./UI
+      args:
+        env: prod
+    container_name:
+      frontend
+    expose:
+      - 4200
+      - 80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`perseus.acumenus.net`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.routers.frontend.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+  white-rabbit:
+    image: perseushub/white-rabbit:latest
+    build: ../WhiteRabbit
+    container_name:
+      white-rabbit
+    ports:
+      - "8002:8000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+      - files-manager
+  vocabularydb:
+    image: perseushub/vocabularydb:latest
+    build: ./vocabulary-db
+    container_name: vocabularydb
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "vocabulary", "-U", "admin" ]
+      timeout: 60s
+      interval: 30s
+      retries: 10
+    volumes:
+      - vocabularydb:/data/postgres
+    ports:
+      - "5431:5432"
+  cdm-builder:
+    image: perseushub/cdm-builder:latest
+    build: ../ETL-CDMBuilder
+    container_name:
+      cdm-builder
+    ports:
+      - "9000:9000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      - shareddb
+      - files-manager
+      - vocabularydb
+  solr:
+    image: perseushub/solr:latest
+    build: ./solr
+    container_name: solr
+    ports:
+      - "8983:8983"
+    volumes:
+      - solr:/var/solr
+    depends_on:
+      - vocabularydb
+  athena:
+    image: perseushub/athena:latest
+    build: ./athena-api
+    container_name: athena
+    environment:
+      ATHENA_ENV: Docker
+    ports:
+      - "5002:5002"
+    depends_on:
+      - solr
+  usagi:
+    image: perseushub/usagi:latest
+    build: ./usagi-api
+    command: python /app/main.py
+    container_name: usagi
+    environment:
+      USAGI_ENV: Docker
+    ports:
+      - "5003:5003"
+    depends_on:
+      - shareddb
+      - solr
+  r-serve:
+    image: perseushub/r-serve:latest
+    build:
+      context: ../DataQualityDashboard/R
+      args:
+        prop: docker
+    container_name:
+      r-serve
+    ports:
+      - "6311:6311"
+    depends_on:
+      - shareddb
+  data-quality-dashboard:
+    image: perseushub/data-quality-dashboard:latest
+    build:
+      context: ../DataQualityDashboard
+    container_name:
+      data-quality-dashboard
+    ports:
+      - "8001:8001"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+      - files-manager
+      - r-serve
+  swagger:
+    image: perseushub/swagger:latest
+    build: ./swagger-ui
+    container_name: swagger
+    ports:
+      - 8080:8080
+volumes:
+  shareddb:
+  vocabularydb:
+  solr:

@@ -1,0 +1,19 @@
+<div class="comment-popup">
+  <div class="comment-popup__header">
+    {{isEdit ? 'Edit comment' : 'Add comment'}}
+    <app-close-dialog-button class="comment-popup__close-icon" (click)="dialogRef.close()"></app-close-dialog-button>
+  </div>
+
+  <div class="comment-popup__content">
+    <label for="comment">Text</label>
+    <textarea #comment id="comment" rows="15" [ngModel]="value"></textarea>
+
+    <div class="comment-popup__content__actions">
+      <button class="cancel" (click)="dialogRef.close()">Cancel</button>
+
+      <button *ngIf="isEdit" class="delete" (click)="onDelete()">Delete</button>
+
+      <button class="apply" [disabled]="!comment.value" (click)="onSave(comment.value)">Save</button>
+    </div>
+  </div>
+</div>

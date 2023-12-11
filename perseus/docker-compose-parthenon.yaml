@@ -1,0 +1,271 @@
+version: '3.9'
+
+services:
+
+  frontend:
+    image: perseushub/frontend:latest
+    build:
+      context: ./UI
+      args:
+        env: prod
+    container_name:
+      frontend
+    expose:
+      - 4200
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`perseus.acumenus.net`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.routers.frontend.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+      - "traefik.http.services.frontend.loadbalancer.server.port=4200"
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+      - traefik-proxy
+
+  shareddb:
+    image: perseushub/shareddb:latest
+    build: ./shared-db
+    container_name: shareddb
+    volumes:
+      - shareddb:/data/postgres
+    expose:
+      - "5432"
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  files-manager:
+    image: perseushub/files-manager:latest
+    build: ./files-manager
+    container_name: files-manager
+    expose:
+      - "10500"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+      - traefik-proxy
+
+  user:
+    image: perseushub/user:latest
+    build: ./user
+    container_name: user
+    environment:
+      USER_ENV: Docker
+    env_file:
+      - user/user-envs.txt
+    expose:
+      - "5001"
+    depends_on:
+      - shareddb
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  backend:
+    image: perseushub/backend:latest
+    build: ./perseus-api
+    container_name: backend
+    environment:
+      PERSEUS_ENV: Docker
+    expose:
+      - "5004"
+    depends_on:
+      - shareddb
+      - files-manager
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  white-rabbit:
+    image: perseushub/white-rabbit:latest
+    build: ../WhiteRabbit
+    container_name:
+      white-rabbit
+    expose:
+      - "8000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+      - files-manager
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  vocabularydb:
+    image: perseushub/vocabularydb:latest
+    build: ./vocabulary-db
+    container_name: vocabularydb
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "vocabulary", "-U", "admin" ]
+      timeout: 60s
+      interval: 30s
+      retries: 10
+    volumes:
+      - vocabularydb:/data/postgres
+    ports:
+      - "5431:5432"
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  cdm-builder:
+    image: perseushub/cdm-builder:latest
+    build: ../ETL-CDMBuilder
+    container_name:
+      cdm-builder
+    expose:
+      - "9000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      - shareddb
+      - files-manager
+      - vocabularydb
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  solr:
+    image: perseushub/solr:latest
+    build: ./solr
+    container_name: solr
+    expose:
+      - "8983"
+    volumes:
+      - solr:/var/solr
+    depends_on:
+      - vocabularydb
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  athena:
+    image: perseushub/athena:latest
+    build: ./athena-api
+    container_name: athena
+    environment:
+      - ATHENA_ENV=Docker
+    expose:
+      - "5002"
+    depends_on:
+      - solr
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  usagi:
+    image: perseushub/usagi:latest
+    build: ./usagi-api
+    command: python /app/main.py
+    container_name: usagi
+    environment:
+      USAGI_ENV: Docker
+    expose:
+      - "5003"
+    depends_on:
+      - shareddb
+      - solr
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  r-serve:
+    image: perseushub/r-serve:latest
+    build:
+      context: ../DataQualityDashboard/R
+      args:
+        prop: docker
+    container_name:
+      r-serve
+    expose:
+      - "6311"
+    depends_on:
+      - shareddb
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  data-quality-dashboard:
+    image: perseushub/data-quality-dashboard:latest
+    build:
+      context: ../DataQualityDashboard
+    container_name:
+      data-quality-dashboard
+    expose:
+      - "8001"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+      - files-manager
+      - r-serve
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+  swagger:
+    image: perseushub/swagger:latest
+    build: ./swagger-ui
+    container_name: swagger
+    expose:
+      - "8080"
+    labels:
+      - "traefik.enable=true"
+      #Proxy Network
+      - "traefik.docker.network=perseus_default"
+    networks:
+      - perseus_default
+
+networks:
+  perseus_default:
+  traefik-proxy:
+
+volumes:
+  shareddb:
+  vocabularydb:
+  solr:

@@ -1,0 +1,287 @@
+import { Component, Inject, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
+import { BridgeService } from 'src/app/services/bridge.service';
+import { StoreService } from 'src/app/services/store.service';
+import { Concept, IConcept, IConceptOptions } from '@models/perseus/concept';
+import * as conceptMap from '../concept-fileds-list.json';
+import { OverlayService } from 'src/app/services/overlay/overlay.service';
+import { cloneDeep } from 'src/app/infrastructure/utility';
+import { LookupComponent } from '../lookup/lookup.component';
+import { PerseusLookupService } from '@services/perseus/perseus-lookup.service';
+import { BaseComponent } from '@shared/base/base.component';
+import { createConceptFields, updateConceptsIndexes, updateConceptsList } from 'src/app/utils/concept-util';
+import { ConceptTransformationService } from 'src/app/services/concept-transformation.sevice';
+import { SqlTransformationComponent } from '@mapping/sql-transformation/sql-transformation.component';
+import { SqlForTransformation } from '@app/models/transformation/sql-for-transformation';
+import { openErrorDialog, parseHttpError } from '@utils/error'
+import { IConceptTables } from '@models/perseus/concept-tables'
+import { Lookup } from '@models/perseus/lookup'
+import { toLookupForEtlConfiguration, toLookupRequest } from '@utils/lookup-util'
+import { MatSnackBar } from '@angular/material/snack-bar'
+import { LookupType } from '@models/perseus/lookup-type'
+import { Observable } from 'rxjs'
+import { DEFAULT_CLONE } from '@models/clones'
+
+@Component({
+  selector: 'app-concept-transformation',
+  templateUrl: './concept-transformation.component.html',
+  styleUrls: [
+    './concept-transformation.component.scss',
+    '../transform-config/transform-config.component.scss'
+  ]
+})
+export class ConceptTransformationComponent extends BaseComponent implements OnInit {
+
+  @ViewChild('sqlTransformation') sqlTransformation: SqlTransformationComponent;
+  @ViewChild('lookupComponent') lookupComponent: LookupComponent;
+
+  constructor(@Inject(MAT_DIALOG_DATA) public payload: any,
+              private storeService: StoreService,
+              private bridgeService: BridgeService,
+              private renderer: Renderer2,
+              private overlayService: OverlayService,
+              public dialogRef: MatDialogRef<ConceptTransformationComponent>,
+              private lookupService: PerseusLookupService,
+              private dialogService: MatDialog,
+              private snackBar: MatSnackBar
+  ) {
+    super();
+  }
+
+  dataSource: MatTableDataSource<IConcept>;
+  concepts = [ new Concept(), new Concept() ];
+
+  conceptsTable: IConceptTables;
+  targetTableName;
+  selectedCellElement;
+  conceptFieldsMap = (conceptMap as any).default;
+  connectedToConceptFields = {};
+  conceptFields = [];
+  selectedCellType = '';
+  selectedConceptId: number;
+  reducedSqlArea = true;
+  lookupType: LookupType = 'source_to_standard';
+  targetCloneName: string;
+  targetCondition: string;
+  row: IConcept;
+
+  sql: SqlForTransformation = {}
+  sourceFields = ''
+
+  tabIndex = 0
+
+  get displayedColumns() {
+    return [ 'source_value', 'concept_id', 'source_concept_id', 'type_concept_id', 'remove_concept' ];
+  }
+
+  get sqlForTransformation(): SqlForTransformation {
+    return {
+      ...this.conceptsTable.conceptsList[ this.selectedConceptId ].fields[ this.selectedCellType ].sqlForTransformation
+    }
+  }
+
+  set sqlForTransformation(sqlObject: SqlForTransformation) {
+    this.conceptsTable.conceptsList[ this.selectedConceptId ].fields[ this.selectedCellType ].sqlForTransformation = sqlObject;
+  }
+
+  set conceptSql(sqlString: string) {
+    this.conceptsTable.conceptsList[ this.selectedConceptId ].fields[ this.selectedCellType ].sql = sqlString
+  }
+
+  set cellSelected(selected: boolean) {
+    this.conceptsTable.conceptsList[ this.selectedConceptId ].fields[ this.selectedCellType ].selected = selected;
+  }
+
+  get conceptField() {
+    return this.conceptsTable.conceptsList[ this.selectedConceptId ].fields[ this.selectedCellType ].field;
+  }
+
+  get noSelected(): boolean {
+    return !this.selectedCellElement ||
+      !this.conceptsTable.conceptsList[this.selectedConceptId].fields[this.selectedCellType].sqlApplied
+  }
+
+  get applyDisabled(): boolean {
+    return this.tabIndex === 1 && !!this.lookupComponent?.invalid
+  }
+
+  ngOnInit(): void {
+    this.targetTableName = this.payload.row.tableName;
+    this.conceptFields = this.conceptFieldsMap[ this.targetTableName ];
+    this.targetCloneName = this.payload.row.cloneTableName;
+    this.targetCondition = this.payload.row.condition;
+    this.row = this.payload.row;
+
+    this.collectConnectedFields();
+
+    if (!this.storeService.state.concepts[`${this.targetTableName}|${this.payload.oppositeSourceTable}`]) {
+      const conceptService = new ConceptTransformationService(this.targetTableName, this.payload.oppositeSourceTable, this.storeService.state.concepts);
+      conceptService.addNewConceptTable();
+    }
+
+    this.conceptsTable = cloneDeep(this.storeService.state.concepts[ `${this.targetTableName}|${this.payload.oppositeSourceTable}` ]);
+
+    if ( this.conceptsTable.lookup['name'] ) {
+      const copiedLookup = cloneDeep(this.conceptsTable.lookup);
+      const lookups = {};
+      this.targetCloneName ? lookups[ this.targetCloneName] = copiedLookup : lookups[DEFAULT_CLONE] = copiedLookup;
+      this.conceptsTable.lookup = lookups;
+    } else {
+      if (!this.targetCloneName && this.conceptsTable.lookup[DEFAULT_CLONE] || !this.conceptsTable.lookup[this.targetCloneName]) {
+        const copiedLookup = cloneDeep(Object.values(this.conceptsTable.lookup)[0])
+        this.targetCloneName ? this.conceptsTable.lookup[ this.targetCloneName] = copiedLookup : this.conceptsTable.lookup[DEFAULT_CLONE] = copiedLookup;
+      }
+    }
+
+    this.dataSource = new MatTableDataSource(this.conceptsTable.conceptsList
+      .filter(it => it.fields[ 'concept_id' ].targetCloneName === this.targetCloneName));
+  }
+
+  collectConnectedFields() {
+    this.connectedToConceptFields = {};
+    this.conceptFields.forEach(item => {
+      const connectedFields = [];
+
+      const links = Object.values(this.bridgeService.arrowsCache)
+        .filter(this.bridgeService.sourceConnectedToSameTargetByName(item, this.row, this.payload.oppositeSourceTable));
+      links.forEach(link => {
+        if (link.source.grouppedFields && link.source.grouppedFields.length) {
+          link.source.grouppedFields.forEach(it => {
+            const ungrouppedField = cloneDeep(link);
+            ungrouppedField.source = it;
+            connectedFields.push(ungrouppedField);
+          });
+        } else {
+          connectedFields.push(link);
+        }
+      });
+      this.connectedToConceptFields[ item ] = connectedFields;
+    });
+  }
+
+  onCellClick(cell, row: IConcept) {
+    while (cell.localName !== 'td') {
+      cell = cell.parentElement;
+    }
+    const newselectedCellElement = cell;
+    if (this.selectedCellElement !== newselectedCellElement) {
+      if (this.selectedCellElement) {
+        this.renderer.removeClass(this.selectedCellElement, 'concept-cell-selected');
+        this.cellSelected = false;
+        this.saveConceptSqlTransformation();
+      }
+      this.selectedCellElement = newselectedCellElement;
+      this.selectedCellType = this.selectedCellElement.classList.contains('concept_id') ? 'concept_id' :
+        this.selectedCellElement.classList.contains('source_value') ? 'source_value' :
+          this.selectedCellElement.classList.contains('source_concept_id') ? 'source_concept_id' : 'type_concept_id';
+      this.renderer.addClass(this.selectedCellElement, 'concept-cell-selected');
+      this.selectedConceptId = row.id;
+      this.cellSelected = true;
+      this.sql = this.sqlForTransformation;
+      this.sourceFields = this.conceptField;
+    }
+  }
+
+  getLookup() {
+    return this.targetCloneName ? this.conceptsTable.lookup[this.targetCloneName] : this.conceptsTable.lookup[DEFAULT_CLONE];
+  }
+
+  getLookupName() {
+    if (!this.conceptsTable.lookup[this.targetCloneName] && !this.conceptsTable.lookup[DEFAULT_CLONE] ) {
+      return this.conceptsTable.lookup['name'];
+    }
+    return this.targetCloneName ? this.conceptsTable.lookup[this.targetCloneName]['name'] : this.conceptsTable.lookup[DEFAULT_CLONE]['name'];
+  }
+
+  toggleSqlTransformation(event: any) {
+    this.conceptsTable.conceptsList[ this.selectedConceptId ].fields[ this.selectedCellType ].sqlApplied = event;
+  }
+
+  onTabIndexChanged(index: number) {
+    this.tabIndex = index
+    if (index === 1) {
+      this.lookupComponent.refresh()
+    }
+  }
+
+  addConcept() {
+    const fields = createConceptFields(this.conceptFields, this.targetCloneName, this.targetCondition);
+    const conceptOptions: IConceptOptions = {
+      id: this.conceptsTable.conceptsList.length,
+      fields
+    };
+    this.conceptsTable.conceptsList.push(new Concept(conceptOptions));
+    this.dataSource = new MatTableDataSource(this.conceptsTable.conceptsList
+      .filter(it => it.fields[ 'concept_id' ].targetCloneName === this.targetCloneName));
+  }
+
+  removeConcept(row: any) {
+    this.removeSelection();
+    this.conceptsTable.conceptsList = this.conceptsTable.conceptsList.filter(item => item.id !== row.id);
+    this.conceptsTable.conceptsList.forEach((item, index) => {
+      item.id = index;
+    });
+    this.dataSource = new MatTableDataSource(this.conceptsTable.conceptsList.filter(it => it.fields[ 'concept_id' ].targetCloneName === this.targetCloneName));
+  }
+
+  saveConceptSqlTransformation() {
+    if (this.selectedCellType) {
+      this.conceptSql = this.sqlTransformation.sqlForTransformation.name;
+      this.sqlForTransformation = this.sqlTransformation.sqlForTransformation;
+    }
+  }
+
+  add() {
+    this.saveConceptSqlTransformation();
+
+    this.removeSelection();
+
+    this.conceptsTable.conceptsList = updateConceptsList(this.conceptsTable.conceptsList);
+    updateConceptsIndexes(this.conceptsTable.conceptsList);
+    this.bridgeService.updateConceptArrowTypes(this.targetTableName, this.payload.oppositeSourceTable, this.targetCloneName)
+
+    this.storeService.state.concepts[ `${this.targetTableName}|${this.payload.oppositeSourceTable}` ] = this.conceptsTable;
+
+    if (this.payload.oppositeSourceTable === 'similar') {
+      this.bridgeService.updateSimilarConcepts(this.row);
+    }
+
+    if (this.lookupComponent.updatedSourceToStandard || this.lookupComponent.updatedSourceToSource) {
+      this.updateLookupValue(this.lookupComponent.updatedLookup)
+        .subscribe(lookup => {
+          this.conceptsTable.lookup[this.targetCloneName ?? DEFAULT_CLONE] = toLookupForEtlConfiguration(lookup)
+          this.snackBar.open('Lookup successfully saved!', ' DISMISS ')
+        }, error => {
+          openErrorDialog(this.dialogService, 'Failed to save lookup', parseHttpError(error))
+        })
+      this.storeService.state.concepts[ `${this.targetTableName}|${this.payload.oppositeSourceTable}` ] = this.conceptsTable
+      this.dialogRef.close();
+    } else {
+      const selectedLookup = this.lookupComponent.selected
+      this.conceptsTable.lookup[this.targetCloneName ?? DEFAULT_CLONE] = toLookupForEtlConfiguration(selectedLookup)
+      this.storeService.state.concepts[ `${this.targetTableName}|${this.payload.oppositeSourceTable}` ] = this.conceptsTable
+      this.dialogRef.close();
+    }
+  }
+
+  updateLookupValue(lookup: Lookup): Observable<Lookup> {
+    const lookupRequest = toLookupRequest(lookup)
+    return lookup.id && lookup.name === lookup.originName ?
+      this.lookupService.updateLookup(lookup.id, lookupRequest) :
+      this.lookupService.createLookup(lookupRequest)
+  }
+
+  removeSelection() {
+    if (this.selectedCellElement) {
+      this.renderer.removeClass(this.selectedCellElement, 'concept-cell-selected');
+      this.conceptsTable.conceptsList[ this.selectedConceptId ].fields[ this.selectedCellType ].selected = false;
+      this.selectedCellElement = undefined;
+    }
+  }
+
+  close() {
+    this.removeSelection();
+    this.dialogRef.close();
+  }
+}

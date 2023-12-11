@@ -1,0 +1,20 @@
+@import "mixins";
+
+button {
+  @include cdm-button();
+
+  &.confirm {
+    background: #066BBB;
+    color: #FFFFFF;
+
+    &:disabled {
+      cursor: default;
+      opacity: .5;
+    }
+  }
+
+  &.cancel {
+    background: #E5E5E5;
+    color: #404040;
+  }
+}

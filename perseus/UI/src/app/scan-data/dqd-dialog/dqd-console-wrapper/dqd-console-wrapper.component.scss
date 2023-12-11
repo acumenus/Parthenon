@@ -1,0 +1,13 @@
+.console-wrapper__action {
+  width: 400px;
+  display: flex;
+  justify-content: space-between;
+
+  .confirm {
+    width: 100px;
+  }
+
+  .cancel {
+    width: 80px;
+  }
+}

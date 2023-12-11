@@ -1,0 +1,15 @@
+.console-wrapper {
+  &__action {
+    &-back {
+      width: 80px;
+    }
+
+    &-close {
+      width: 80px;
+    }
+
+    &-save, &-link {
+      width: 120px;
+    }
+  }
+}

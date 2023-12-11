@@ -1,0 +1,81 @@
+<div class="vocabulary-search" [style.bottom]="bottom">
+  <div class="vocabulary-search__side-panel" [ngClass]="{blocked: disableAll}">
+    <h2 class="vocabulary-search__side-panel__header">
+      Filters
+    </h2>
+
+    <ng-container *ngIf="filters.length > 0">
+      <div class="vocabulary-search__chips" [style.height]="chipsHeight">
+        <app-chip *ngFor="let filter of selectedFilters; let i = index"
+                  [id]="i"
+                  [name]="filter.name"
+                  [backgroundColor]="chipBackgroundColor(filter.filterIndex)"
+                  (delete)="onDeleteFilter($event)"></app-chip>
+      </div>
+
+      <div class="vocabulary-search__filters">
+        <div *ngFor="let filter of filters" class="vocabulary-search__filters__filter-wrapper">
+          <app-filter-dropdown [ngModel]="selectedFilters"
+                               (ngModelChange)="onCheckFilter($event)"
+                               [filter]="filter">
+            <app-filter-color-point class="vocabulary-search__filters__filter-wrapper__point" [color]="filter.color"></app-filter-color-point>
+          </app-filter-dropdown>
+        </div>
+      </div>
+
+      <div class="vocabulary-search__apply">
+        <button class="clear" (click)="onClear()">Clear</button>
+        <button class="apply" (click)="onEnterOrApply()">Apply</button>
+      </div>
+    </ng-container>
+
+    <div *ngIf="disableAll" class="vocabulary-search__side-panel__blocker">
+    </div>
+  </div>
+
+  <div class="vocabulary-search__content">
+    <app-navigation-grid height="385px"
+                         [data]="concepts"
+                         [columns]="columns"
+                         [total]="total"
+                         [pageSize]="pageSize"
+                         [error]="error"
+                         [loading]="requestInProgress"
+                         (sort)="onSort($event)"
+                         (pagination)="onPagination($event)">
+      <div toolbar class="vocabulary-search__grid-toolbar">
+        <app-search-input [ngModel]="requestParams.query"></app-search-input>
+
+        <div class="vocabulary-search__mode">
+          <label>
+            <input type="radio" value="local" [ngModel]="mode" (ngModelChange)="onModeChange($event)">
+            Perseus
+          </label>
+
+          <label>
+            <input type="radio" value="athena" [ngModel]="mode" (ngModelChange)="onModeChange($event)">
+            Athena
+          </label>
+        </div>
+      </div>
+
+      <div error class="error-row">
+        <div class="error-icon-wrapper">
+          <mat-icon class="error-icon" svgIcon="error"></mat-icon>
+        </div>
+        <div *ngIf="isAthenaMode else perseusError" class="error-text">
+          Athena’s server error occurred. Please try again later
+          or use Perseus Vocabulary
+        </div>
+        <ng-template #perseusError>
+          <div class="error-text">
+            Server error occurred. Please try again later
+            or use Athena Vocabulary
+          </div>
+        </ng-template>
+      </div>
+    </app-navigation-grid>
+  </div>
+
+  <app-close-dialog-button class="vocabulary-search__close" (click)="onClose()"></app-close-dialog-button>
+</div>

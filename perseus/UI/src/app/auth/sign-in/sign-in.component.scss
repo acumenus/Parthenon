@@ -1,0 +1,22 @@
+@import "mixins";
+@import "variables";
+
+.sign-in {
+  &__form {
+    width: 354px;
+    height: 338px;
+    position: relative;
+
+
+    &.add {
+      height: 195px;
+    }
+
+    &__error {
+      position: absolute;
+      width: 278px;
+      display: flex;
+      justify-content: center;
+    }
+  }
+}

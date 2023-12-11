@@ -1,0 +1,49 @@
+.error {
+  position: relative;
+  padding: 42px 35px 35px 35px;
+
+  &__icon {
+    color: red;
+  }
+
+  &__title {
+    margin-top: 3px;
+    margin-left: 5px;
+  }
+
+  &__header {
+    display: flex;
+    margin-bottom: 22px;
+  }
+
+  &__close-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__message {
+    min-width: 200px;
+    margin-bottom: 34px;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  &__buttons {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+  }
+
+  &__close-button {
+    width: 50px;
+  }
+}
+
+
+

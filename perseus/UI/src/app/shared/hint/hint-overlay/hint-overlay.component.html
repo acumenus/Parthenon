@@ -1,0 +1,12 @@
+<div class="hint-overlay"
+     [ngClass]="position"
+     [style.width]="width">
+  {{hint.text}}
+
+  <a *ngIf="hint.link" class="hint-overlay__link" target="_blank" [href]="hint.link">See More</a>
+
+  <ng-container *ngIf="hint.email">
+    <a class="hint-overlay__link" target="_blank" [href]="emailHref">support</a>
+    .
+  </ng-container>
+</div>

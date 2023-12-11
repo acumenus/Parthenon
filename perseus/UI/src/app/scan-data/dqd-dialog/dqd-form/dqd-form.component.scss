@@ -1,0 +1,49 @@
+.dqd-connection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  $content-height: 495px;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    width: 296px;
+    height: $content-height;
+    border-radius: 2px;
+
+    &-form {
+      width: 100%;
+      height: 425px;
+    }
+  }
+
+  &__bottom-border {
+    position: absolute;
+    top: $content-height;
+    height: 1px;
+    width: 367px;
+    background-color: rgba(#066BBB, 0.1);
+  }
+
+  &__action {
+    display: flex;
+    justify-content: center;
+    margin-top: 35px;
+
+    height: 33px;
+
+    &-cancel {
+      width: 80px;
+      margin-right: 15px;
+    }
+
+    &-convert {
+      width: 80px;
+
+      &:disabled {
+        opacity: 0.5;
+      }
+    }
+  }
+}
