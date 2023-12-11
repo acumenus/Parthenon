@@ -1,6 +1,6 @@
 ### Caddy as Prime RP
 ### Parthenon Utilities
-
+version: '3'
 
 ##################################################
 #
@@ -10,6 +10,53 @@
 #
 ##################################################
 
+### Scout
+services:
+
+    mongodb:
+    image: mongo:4.4.9
+    container_name: mongodb
+    networks:
+      - scout-net
+    ports:
+      - '27013:27017'
+    expose:
+      - '27017'
+
+  scout-cli:
+    build: .
+    container_name: scout-cli
+    #command: bash -c "
+    #  scout --host mongodb setup demo"
+    volumes:
+      - ./scout:/home/worker/app/scout
+    networks:
+      - scout-net
+    depends_on:
+      - mongodb
+
+  scout-web:
+    build:
+      context: .
+      dockerfile: Dockerfile-server
+    expose:
+      - '8750'
+    ports:
+      - '8750:8000'
+    environment:
+      SCOUT_CONFIG: /home/worker/app/scout/server/config.py
+      MONGO_HOST: mongodb
+      MONGO_DBNAME: scout-demo
+      GUNICORN_WORKERS: 1
+      GUNICORN_TREADS: 1
+      GUNICORN_BIND: 0.0.0.0:8000
+      GUNICORN_TIMEOUT: 400
+    volumes:
+      - ./scout:/home/worker/app/scout
+    networks:
+      - scout-net
+    depends_on:
+      - mongodb
 
 ##################################################
 #
@@ -20,8 +67,9 @@
 ##################################################
 
 networks:
+  scout-net:
+    driver: bridge
   proxy:
     name: proxy
 
-volumes:
 
