@@ -1,9 +1,5 @@
-tls:
-  stores:
-    default:
-      defaultCertificate:
-        certFile: /etc/certs/cert1.pem
-        keyFile: /etc/certs/privkey1.pem
+
+### --- Broadsea stack
 
 http:
   routers:
@@ -15,8 +11,8 @@ http:
     broadsea-content:
       entryPoints: '{{ env "HTTP_TYPE" }}'
       service: "broadsea-content"
-      rule: 'Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/`)'
-      
+      rule: 'Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/broadsea`)'
+
     ohdsi-atlas:
       entryPoints: '{{ env "HTTP_TYPE" }}'
       service: "ohdsi-atlas"
@@ -25,7 +21,7 @@ http:
     ohdsi-webapi:
       entryPoints: '{{ env "HTTP_TYPE" }}'
       service: "ohdsi-webapi"
-      rule: 'Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/WebAPI`)'
+        rule: 'Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/WebAPI`)'
 
     broadsea-hades:
       entryPoints: '{{ env "HTTP_TYPE" }}'
@@ -44,18 +40,6 @@ http:
       entryPoints: '{{ env "HTTP_TYPE" }}'
       service: "broadsea-ares"
       rule: 'Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/ares`)'
-
-  middlewares:
-    broadsea-hades-path-strip:
-      stripPrefix:
-        prefixes: 
-          - "/hades"
-        forceSlash: false
-
-    broadsea-hades-root-path-header:
-      headers:
-        customRequestHeaders:
-          X-RStudio-Root-Path: "/hades"
 
   services:
     traefik:
@@ -92,3 +76,123 @@ http:
       loadBalancer:
         servers:
           - url: http://broadsea-ares
+
+  middlewares:
+    broadsea-hades-path-strip:
+      stripPrefix:
+        prefixes:
+          - "/hades"
+        forceSlash: false
+
+    broadsea-hades-root-path-header:
+      headers:
+      customRequestHeaders:
+        X-RStudio-Root-Path: "/hades"
+
+### --- Perseus Stack
+
+http:
+  routers:
+    frontend:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: backend
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/frontend`)'
+
+    backend:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: backend
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/backend`)'
+
+    user:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: user
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/user`)'
+
+    white-rabbit:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: white-rabbit
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/white-rabbit`)'
+
+    cdm-builder:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: cdm-builder
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/cdm-builder`)'
+
+    data-quality-dashboard:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: data-quality-dashboard
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(` /data-quality-dashboard`)'
+
+    athena:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: athena
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/athena`)'
+
+    solr:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: solr
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/solr`)'
+
+    usagi:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: usagi
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/usagi`)'
+
+    swagger:
+      entryPoints: '{{ env "HTTP_TYPE" }}'
+      service: swagger
+      rule: Host(`{{ env "BROADSEA_HOST" }}`) && PathPrefix(`/swagger`)'
+
+
+  services:
+    frontend:
+      loadBalancer:
+        servers:
+        - url: http://frontend:4200
+
+    backend:
+      loadBalancer:
+        servers:
+        - url: http://backend:5004
+
+    user:
+      loadBalancer:
+        servers:
+        - url: http://user:5001
+
+    white-rabbit:
+      loadBalancer:
+        servers:
+        - url: http://white-rabbit:8000
+
+    cdm-builder:
+      loadBalancer:
+        servers:
+        - url: http://cdm-builder:9000
+
+    data-quality-dashboard:
+      loadBalancer:
+        servers:
+        - url: http://data-quality-dashboard:8001
+
+    athena:
+      loadBalancer:
+        servers:
+        - url: http://athena:5002
+
+    solr:
+      loadBalancer:
+        servers:
+        - url: http://solr:8983
+
+    usagi:
+      loadBalancer:
+        servers:
+        - url: http://usagi:5003
+
+    swagger:
+      loadBalancer:
+        servers:
+        - url: http://swagger:8080
+
+  middlewares:

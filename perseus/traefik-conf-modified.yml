@@ -1,0 +1,230 @@
+
+### --- Perseus Stack
+
+http:
+  routers:
+    router-for-/:
+      rule: PathPrefix(``/`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/
+      service: service-for-/
+    router-for-/backend:
+      rule: PathPrefix(``/backend`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/backend
+      service: service-for-/backend
+    router-for-/user:
+      rule: PathPrefix(``/user`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/user
+      service: service-for-/user
+    router-for-/user/api/is_token_valid_internal:
+      rule: PathPrefix(``/user/api/is_token_valid_internal`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      service: service-for-/user/api/is_token_valid_internal
+      middlewares:
+      - headers-for-/user/api/is_token_valid_internal
+    router-for-/white-rabbit:
+      rule: PathPrefix(``/white-rabbit`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/white-rabbit
+      service: service-for-/white-rabbit
+    router-for-/cdm-builder:
+      rule: PathPrefix(``/cdm-builder`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/cdm-builder
+      service: service-for-/cdm-builder
+    router-for-/data-quality-dashboard/api:
+      rule: PathPrefix(``/data-quality-dashboard/api`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/data-quality-dashboard/api
+      service: service-for-/data-quality-dashboard/api
+    router-for-/data-quality-dashboard:
+      rule: PathPrefix(``/data-quality-dashboard`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/data-quality-dashboard
+      service: service-for-/data-quality-dashboard
+    router-for-/athena:
+      rule: PathPrefix(``/athena`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/athena
+      service: service-for-/athena
+    router-for-/solr:
+      rule: PathPrefix(``/solr`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/solr
+      service: service-for-/solr
+    router-for-/usagi:
+      rule: PathPrefix(``/usagi`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/usagi
+      service: service-for-/usagi
+    router-for-/swagger:
+      rule: PathPrefix(``/swagger`.Host(`perseus.acumenus.net`)`)
+      entryPoints:
+      - web
+      middlewares:
+      - headers-for-/swagger
+      service: service-for-/swagger
+  services:
+    service-for-/:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:4200
+    service-for-/backend:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:5004
+    service-for-/user:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:5001
+    service-for-/user/api/is_token_valid_internal:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:5001
+    service-for-/white-rabbit:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:8000
+    service-for-/cdm-builder:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:9000
+    service-for-/data-quality-dashboard/api:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:8001
+    service-for-/data-quality-dashboard:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:8001
+    service-for-/athena:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:5002
+    service-for-/solr:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:8983
+    service-for-/usagi:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:5003
+    service-for-/swagger:
+      loadBalancer:
+        servers:
+        - url: http://172.17.0.1:8080
+  middlewares:
+    headers-for-/:
+      headers:
+        customRequestHeaders:
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/backend:
+      headers:
+        customRequestHeaders:
+          Username: $username
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/user:
+      headers:
+        customRequestHeaders:
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/user/api/is_token_valid_internal:
+      headers:
+        customRequestHeaders:
+          Content-Length: '""'
+          X-Original-URI: $request_uri
+    headers-for-/white-rabbit:
+      headers:
+        customRequestHeaders:
+          Username: $username
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/cdm-builder:
+      headers:
+        customRequestHeaders:
+          Username: $username
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/data-quality-dashboard/api:
+      headers:
+        customRequestHeaders:
+          Username: $username
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/data-quality-dashboard:
+      headers:
+        customRequestHeaders:
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/athena:
+      headers:
+        customRequestHeaders:
+          Username: $username
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/solr:
+      headers:
+        customRequestHeaders:
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/usagi:
+      headers:
+        customRequestHeaders:
+          Username: $username
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+    headers-for-/swagger:
+      headers:
+        customRequestHeaders:
+          X-Real-IP: $remote_addr
+          X-Forwarded-For: $proxy_add_x_forwarded_for
+          X-Forwarded-Proto: $scheme
+          Host: $host
+entryPoints:
+  web:
+    address: :80

@@ -1,27 +1,48 @@
-### Caddy as Prime RP + Traefik as sub RP for Broadsea + Ngnix as sub RP for Perseus
+### Traefik as RP for all services
 ### Heimdall as Launch Page for Parthenon
 
 version: '3.7'
 
+##################################################
+#
+#   PARTHENON TRAEFIK PROXY
+#
+##################################################
+
 services:
-  caddy:
-    image: caddy:latest
-    container_name: "parthenon-caddy"
+  traefik:
+    image: traefik:v2.10.5
+    container_name: traefik
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.email=sudoshi@mac.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
     ports:
-      - "80:80"   # HTTP
-      - "443:443" # HTTPS
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/config.yml:/etc/traefik/config.yml:ro
+      - /path/to/acme.json:/acme.json
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.acumenus.net`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=myresolver"
+      - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=acumenus:$$apr1$$dNpOAWgT$$.1LJts2Nk6fdwFqJXIgWi0"
     networks:
-      - proxy
+      - traefik-proxy
 
 ##################################################
 #
-#
 #   PARTHENON LAUNCH PAGE
-#
 #
 ##################################################
 
@@ -35,12 +56,21 @@ services:
       - TZ=America/New_York # Replace with your timezone
       - APP_NAME=Parthenon
     volumes:
-      - "./heimdall:/config"
-      - "./heimdall/favicons/favicon-16x16.png:/var/www/localhost/heimdall/public/favicon-16x16.png"
-      - "./heimdall/favicons/favicon-32x32.png:/var/www/localhost/heimdall/public/favicon-32x32.png"
-      - "./heimdall/favicons/favicon.ico:/var/www/localhost/heimdall/public/favicon.ico"
+      - "/portainer/Files/AppData/Config/Heimdall:/config"
+      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon-16x16.png:/var/www/localhost/heimdall/public/favicon-16x16.png"
+      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon-32x32.png:/var/www/localhost/heimdall/public/favicon-32x32.png"
+      - "/portainer/Files/AppData/Config/Heimdall/favicons/favicon.ico:/var/www/localhost/heimdall/public/favicon.ico"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.heimdall.rule=Host(`dev.acumenus.net`)"
+      - "traefik.http.routers.heimdall.entrypoints=websecure"
+      - "traefik.http.routers.heimdall.tls.certresolver=myresolver"
+      - "traefik.http.routers.heimdall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+      - "traefik.http.services.heimdall.loadbalancer.server.port=80"
     networks:
-      - proxy
+      - traefik-proxy
 
 ##################################################
 #
@@ -49,8 +79,82 @@ services:
 #
 ##################################################
 
+broadsea-content:
+    container_name: broadsea-content
+    image: nginx
+    restart: unless-stopped
+    environment:
+      CONTENT_ARES_DISPLAY: ${CONTENT_ARES_DISPLAY}
+      CONTENT_ATLAS_DISPLAY: ${CONTENT_ATLAS_DISPLAY}
+      CONTENT_HADES_DISPLAY: ${CONTENT_HADES_DISPLAY}
+    volumes:
+      - ./broadsea-content/images:/usr/share/nginx/html/images
+      - ./broadsea-content/style.css:/usr/share/nginx/html/style.css
+      - ./broadsea-content/index.html:/tmp/index.html
+      - ./broadsea-content/envsubst.sh:/tmp/envsubst.sh:ro
+    entrypoint: ["sh", "/tmp/envsubst.sh" ]
+    labels:
+      - "traefik.enable=true"
+    networks:
+      - traefik-proxy
 
+  broadsea-hades:
+    container_name: broadsea-hades
+    image: ohdsi/broadsea-hades:4.2.1
+    platform: "linux/amd64"
+    environment:
+      - USER=${HADES_USER}
+      - PASSWORD=${HADES_PASSWORD}
+    volumes:
+      - rstudio-home-data:/home
+      - rstudio-tmp-data:/tmp
+    labels:
+      - "traefik.enable=true"
+    ports:
+      - "8787:8787"
+      - "6311:6311"
+    networks:
+      - traefik-proxy
 
+  # WebAPI and Atlas services based on the standard Docker Hub images -------------
+
+  ohdsi-webapi-from-image:
+    image: docker.io/ohdsi/webapi:latest
+    extends: 
+      file: "./broadsea/ohdsi-webapi.yml"
+      service: ohdsi-webapi
+    networks:
+      - traefik-proxy
+
+  ohdsi-atlas-from-image:
+    image: docker.io/ohdsi/atlas:latest
+    extends: 
+      file: "./broadsea/ohdsi-atlas.yml"
+      service: ohdsi-atlas
+    networks:
+      - traefik-proxy
+
+  broadsea-atlasdb:
+    profiles: [ "default", "atlasdb" ]
+    image: ohdsi/broadsea-atlasdb:2.0.0
+    container_name: broadsea-atlasdb
+    platform: "linux/amd64"
+    cpus: 2
+    mem_limit: "4G"
+    environment:
+      - POSTGRES_PASSWORD=mypass
+    ports:
+      - "5432:5432"
+    volumes:
+     - atlasdb-postgres-data:/var/lib/postgresql/data
+     - .broadsea/100_populate_source_source_daimon.sql:/docker-entrypoint-initdb.d/100_populate_source_source_daimon.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - traefik-proxy
 
 ##################################################
 #
@@ -58,19 +162,220 @@ services:
 #
 ###################################################
 
+shareddb:
+    image: perseushub/shareddb:latest
+    build: ./shared-db
+    container_name: shareddb
+    volumes:
+      - shareddb:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - traefik-proxy
+
+  files-manager:
+    image: perseushub/files-manager:latest
+    build: ./files-manager
+    container_name: files-manager
+    ports:
+      - "10500:10500"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+    networks:
+      - traefik-proxy
+
+  user:
+    image: perseushub/user:latest
+    build: ./user
+    container_name: user
+    environment:
+      USER_ENV: Docker
+    env_file:
+      - user/user-envs.txt
+    ports:
+      - "5001:5001"
+    depends_on:
+      - shareddb
+    networks:
+      - traefik-proxy
+  
+  backend:
+    image: perseushub/backend:latest
+    build: ./perseus-api
+    container_name: backend
+    environment:
+      PERSEUS_ENV: Docker
+    ports:
+      - "5004:5004"
+    depends_on:
+      - shareddb
+      - files-manager
+    networks:
+      - traefik-proxy
+
+  frontend:
+    image: perseushub/frontend:latest
+    build:
+      context: ./UI
+      args:
+        env: prod
+    container_name:
+      frontend
+    expose:
+      - 4200
+      - 80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`perseus.acumenus.net`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.routers.frontend.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+  
+  white-rabbit:
+    image: perseushub/white-rabbit:latest
+    build: ../WhiteRabbit
+    container_name:
+      white-rabbit
+    ports:
+      - "8002:8000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+      - files-manager
+    networks:
+      - traefik-proxy
+  
+  vocabularydb:
+    image: perseushub/vocabularydb:latest
+    build: ./vocabulary-db
+    container_name: vocabularydb
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "vocabulary", "-U", "admin" ]
+      timeout: 60s
+      interval: 30s
+      retries: 10
+    volumes:
+      - vocabularydb:/data/postgres
+    ports:
+      - "5431:5432"
+    networks:
+      - traefik-proxy
+
+  cdm-builder:
+    image: perseushub/cdm-builder:latest
+    build: ../ETL-CDMBuilder
+    container_name:
+      cdm-builder
+    ports:
+      - "9000:9000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    depends_on:
+      - shareddb
+      - files-manager
+      - vocabularydb
+    networks:
+      - traefik-proxy
+
+  solr:
+    image: perseushub/solr:latest
+    build: ./solr
+    container_name: solr
+    ports:
+      - "8983:8983"
+    volumes:
+      - solr:/var/solr
+    depends_on:
+      - vocabularydb
+    networks:
+      - traefik-proxy
+
+  athena:
+    image: perseushub/athena:latest
+    build: ./athena-api
+    container_name: athena
+    environment:
+      ATHENA_ENV: Docker
+    ports:
+      - "5002:5002"
+    depends_on:
+      - solr
+    networks:
+      - traefik-proxy
+
+  usagi:
+    image: perseushub/usagi:latest
+    build: ./usagi-api
+    command: python /app/main.py
+    container_name: usagi
+    environment:
+      USAGI_ENV: Docker
+    ports:
+      - "5003:5003"
+    depends_on:
+      - shareddb
+      - solr
+    networks:
+      - traefik-proxy
+
+  r-serve:
+    image: perseushub/r-serve:latest
+    build:
+      context: ../DataQualityDashboard/R
+      args:
+        prop: docker
+    container_name:
+      r-serve
+    ports:
+      - "6311:6311"
+    depends_on:
+      - shareddb
+    networks:
+      - traefik-proxy
+
+  data-quality-dashboard:
+    image: perseushub/data-quality-dashboard:latest
+    build:
+      context: ../DataQualityDashboard
+    container_name:
+      data-quality-dashboard
+    ports:
+      - "8001:8001"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+      - files-manager
+      - r-serve
+    networks:
+      - traefik-proxy
+
+  swagger:
+    image: perseushub/swagger:latest
+    build: ./swagger-ui
+    container_name: swagger
+    ports:
+      - 8080:8080
+    networks:
+      - traefik-proxy
 
 ##################################################
-#
 #
 #   PARTHENON NETWORKS AND VOLUMES
 #
-#
-##################################################
+###################################################
 
 networks:
   proxy:
-    name: proxy
+    name: traefik-proxy
 
 volumes:
-  caddy_data:
-  caddy_config:
+  shareddb:
+  vocabularydb:
+  solr:
