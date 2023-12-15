@@ -13,8 +13,6 @@ version: '3.7'
     image: tecnativa/docker-socket-proxy
     container_name: dockerproxy
     restart: always
-    networks:
-      - socket_proxy
     # privileged: true # true for VM. False for unprivileged LXC container.
     ports:
       - "127.0.0.1:2375:2375"
@@ -52,7 +50,8 @@ version: '3.7'
       - SYSTEM=0
       - TASKS=1 # Portainer
       - VOLUMES=1 # Portainer
-
+    networks:
+      - traefik-proxy
 ##################################################
 #
 #   ACROPOLIS TRAEFIK PROXY
