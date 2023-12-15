@@ -162,29 +162,7 @@ broadsea-content:
 #
 ###################################################
 
-shareddb:
-    image: perseushub/shareddb:latest
-    build: ./shared-db
-    container_name: shareddb
-    volumes:
-      - shareddb:/data/postgres
-    ports:
-      - "5432:5432"
-    networks:
-      - traefik-proxy
-
-  files-manager:
-    image: perseushub/files-manager:latest
-    build: ./files-manager
-    container_name: files-manager
-    ports:
-      - "10500:10500"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    depends_on:
-      - shareddb
-    networks:
-      - traefik-proxy
+### --- Perseus converted to traefik
 
   user:
     image: perseushub/user:latest
@@ -200,7 +178,59 @@ shareddb:
       - shareddb
     networks:
       - traefik-proxy
-  
+    labels:
+      # Router for the user service
+      - "traefik.enable=true"
+      - "traefik.http.routers.user.rule=PathPrefix(`/user`)"
+      - "traefik.http.routers.user.middlewares=user-headers@docker"
+
+      # Middleware to set headers
+      - "traefik.http.middlewares.user-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.user-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.user-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
+    networks:
+      - traefik-proxy
+
+  shareddb:
+    image: perseushub/shareddb:latest
+    build: ./shared-db
+    container_name: shareddb
+    volumes:
+      - shareddb:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - traefik-proxy
+    labels:
+      - "traefik.enable=false"  # Typically, DBs are not exposed through Traefik
+    networks:
+      - traefik-proxy
+
+  files-manager:
+    image: perseushub/files-manager:latest
+    build: ./files-manager
+    container_name: files-manager
+    ports:
+      - "10500:10500"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - shareddb
+    networks:
+      - traefik-proxy
+    labels:
+      # Router for the files-manager service
+      - "traefik.enable=true"
+      - "traefik.http.routers.files-manager.rule=PathPrefix(`/files`)"
+      - "traefik.http.routers.files-manager.middlewares=files-manager-headers@docker"
+
+      # Middleware to set headers
+      - "traefik.http.middlewares.files-manager-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.files-manager-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.files-manager-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
+    networks:
+      - traefik-proxy
+
   backend:
     image: perseushub/backend:latest
     build: ./perseus-api
@@ -214,6 +244,15 @@ shareddb:
       - files-manager
     networks:
       - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.middlewares=backend-headers@docker"
+      - "traefik.http.middlewares.backend-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.backend-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.backend-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
+    networks:
+      - traefik-proxy
 
   frontend:
     image: perseushub/frontend:latest
@@ -221,8 +260,7 @@ shareddb:
       context: ./UI
       args:
         env: prod
-    container_name:
-      frontend
+    container_name: frontend
     expose:
       - 4200
       - 80
@@ -235,12 +273,13 @@ shareddb:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
-  
+    networks:
+      - traefik-proxy
+
   white-rabbit:
     image: perseushub/white-rabbit:latest
     build: ../WhiteRabbit
-    container_name:
-      white-rabbit
+    container_name: white-rabbit
     ports:
       - "8002:8000"
     environment:
@@ -250,7 +289,16 @@ shareddb:
       - files-manager
     networks:
       - traefik-proxy
-  
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.white-rabbit.rule=PathPrefix(`/white-rabbit`)"
+      - "traefik.http.routers.white-rabbit.middlewares=white-rabbit-headers@docker"
+      - "traefik.http.middlewares.white-rabbit-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.white-rabbit-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.white-rabbit-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
+    networks:
+      - traefik-proxy
+
   vocabularydb:
     image: perseushub/vocabularydb:latest
     build: ./vocabulary-db
@@ -266,12 +314,15 @@ shareddb:
       - "5431:5432"
     networks:
       - traefik-proxy
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - traefik-proxy
 
   cdm-builder:
     image: perseushub/cdm-builder:latest
     build: ../ETL-CDMBuilder
-    container_name:
-      cdm-builder
+    container_name: cdm-builder
     ports:
       - "9000:9000"
     environment:
@@ -280,6 +331,15 @@ shareddb:
       - shareddb
       - files-manager
       - vocabularydb
+    networks:
+      - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cdm-builder.rule=PathPrefix(`/cdm-builder`)"
+      - "traefik.http.routers.cdm-builder.middlewares=cdm-builder-headers@docker"
+      - "traefik.http.middlewares.cdm-builder-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.cdm-builder-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.cdm-builder-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
     networks:
       - traefik-proxy
 
@@ -295,6 +355,15 @@ shareddb:
       - vocabularydb
     networks:
       - traefik-proxy
+    labels:
+      - "traefik.enable=true"  # Set to false if not exposing Solr externally
+      - "traefik.http.routers.solr.rule=PathPrefix(`/solr`)"
+      - "traefik.http.routers.solr.middlewares=solr-headers@docker"
+      - "traefik.http.middlewares.solr-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.solr-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.solr-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
+    networks:
+      - traefik-proxy
 
   athena:
     image: perseushub/athena:latest
@@ -306,6 +375,15 @@ shareddb:
       - "5002:5002"
     depends_on:
       - solr
+    networks:
+      - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.athena.rule=PathPrefix(`/athena`)"
+      - "traefik.http.routers.athena.middlewares=athena-headers@docker"
+      - "traefik.http.middlewares.athena-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.athena-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.athena-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
     networks:
       - traefik-proxy
 
@@ -323,6 +401,15 @@ shareddb:
       - solr
     networks:
       - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.usagi.rule=PathPrefix(`/usagi`)"
+      - "traefik.http.routers.usagi.middlewares=usagi-headers@docker"
+      - "traefik.http.middlewares.usagi-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.usagi-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.usagi-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
+    networks:
+      - traefik-proxy
 
   r-serve:
     image: perseushub/r-serve:latest
@@ -330,12 +417,20 @@ shareddb:
       context: ../DataQualityDashboard/R
       args:
         prop: docker
-    container_name:
-      r-serve
+    container_name: r-serve
     ports:
       - "6311:6311"
     depends_on:
       - shareddb
+    networks:
+      - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.r-serve.rule=PathPrefix(`/r-serve`)"
+      - "traefik.http.routers.r-serve.middlewares=r-serve-headers@docker"
+      - "traefik.http.middlewares.r-serve-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.r-serve-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.r-serve-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
     networks:
       - traefik-proxy
 
@@ -343,8 +438,7 @@ shareddb:
     image: perseushub/data-quality-dashboard:latest
     build:
       context: ../DataQualityDashboard
-    container_name:
-      data-quality-dashboard
+    container_name: data-quality-dashboard
     ports:
       - "8001:8001"
     environment:
@@ -355,16 +449,34 @@ shareddb:
       - r-serve
     networks:
       - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.data-quality-dashboard.rule=PathPrefix(`/data-quality-dashboard`)"
+      - "traefik.http.routers.data-quality-dashboard.middlewares=data-quality-dashboard-headers@docker"
+      - "traefik.http.middlewares.data-quality-dashboard-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.data-quality-dashboard-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.data-quality-dashboard-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
+    networks:
+      - traefik-proxy
 
   swagger:
     image: perseushub/swagger:latest
     build: ./swagger-ui
     container_name: swagger
     ports:
-      - 8080:8080
+      - "8080:8080"
     networks:
       - traefik-proxy
-
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.swagger.rule=PathPrefix(`/swagger`)"
+      - "traefik.http.routers.swagger.middlewares=swagger-headers@docker"
+      - "traefik.http.middlewares.swagger-headers.headers.customrequestheaders.X-Real-IP=$${remote_addr}"
+      - "traefik.http.middlewares.swagger-headers.headers.customrequestheaders.X-Forwarded-For=$${remote_addr}"
+      - "traefik.http.middlewares.swagger-headers.headers.customrequestheaders.X-Forwarded-Proto=$${scheme}"
+    networks:
+      - traefik-proxy
+      
 ##################################################
 #
 #   PARTHENON NETWORKS AND VOLUMES
