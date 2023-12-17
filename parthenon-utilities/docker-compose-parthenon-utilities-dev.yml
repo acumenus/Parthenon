@@ -438,7 +438,7 @@ ldap-account-manager:
 ###openLDAP
 
   openldap:
-    image: bitnami/openldap:2
+    image: bitnami/openldap:2.6
     container_name: openldap
     restart: always
     ports:
