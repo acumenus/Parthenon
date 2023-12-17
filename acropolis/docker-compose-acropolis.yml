@@ -1,3 +1,4 @@
+### Docker-proxy for enhanced security
 ### Traefik as RP for all services
 ### Heimdall as Launch Page for Parthenon
 
@@ -52,6 +53,7 @@ version: '3.7'
       - VOLUMES=1 # Portainer
     networks:
       - traefik-proxy
+
 ##################################################
 #
 #   ACROPOLIS TRAEFIK PROXY
@@ -207,6 +209,7 @@ services:
 #   ACROPOLIS NETWORKS AND VOLUMES
 #
 ##################################################
+
 networks:
   name: traefik-proxy
     external: "true"

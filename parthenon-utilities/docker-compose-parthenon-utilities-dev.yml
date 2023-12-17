@@ -1,4 +1,4 @@
-### Caddy as Prime RP
+### No RP
 ### Parthenon Utilities
 version: "3.9"
 
@@ -435,7 +435,7 @@ ldap-account-manager:
       - 'ldap-account-manager-data:/var/lib/ldap-account-manager/config'
       - './lam/apache/lam-httpd.conf:/etc/apache2/conf-available/lam-httpd.conf'
 
-###OpenLDAP
+###openLDAP
 
   openldap:
     image: bitnami/openldap:2
@@ -455,7 +455,7 @@ ldap-account-manager:
       - ldap_network
     volumes:
       - 'openldap-data:/bitnami/openldap'
-      
+
 ##################################################
 #
 #
@@ -490,6 +490,6 @@ volumes:
   ###ldap-account-manager
   ldap-account-manager-data:
     name: ldap-account-manager-data
-  ###OpenLDAP
+  ###openLDAP
   openldap-data:
     name: openldap-data
