@@ -1,6 +1,6 @@
 ### Docker-proxy for enhanced security
 ### Traefik as RP for all services
-### Heimdall as Launch Page for Parthenon
+### Authentik for User Management
 ### Portainer for container/stack management
 
 version: '3.7'
