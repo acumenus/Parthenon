@@ -414,28 +414,29 @@ services:
 
 ###ldap-account-manager
 
-ldap-account-manager:
+  ldap-account-manager:
     image: ldapaccountmanager/lam:stable
     container_name: ldap-account-manager
     restart: always
     ports:
       - "8180:80"
     environment:
-      - LAM_PASSWORD=${LAM_PASSWORD}
+      - LAM_SKIP_PRECONFIGURE=false
+      - LAM_PASSWORD=acumenus
       - LAM_LANG=en_US
-      - LDAP_SERVER=${LDAP_SERVER}
-      - LDAP_DOMAIN=${LDAP_DOMAIN}
-      - LDAP_BASE_DN=${LDAP_BASE_DN}
-      - LDAP_USER=cn=admin,${LDAP_BASE_DN}
+      - LDAP_SERVER=ldap://openldap:1389
+      - LDAP_DOMAIN=acumenus.net
+      - LDAP_BASE_DN=dc=acumenus,dc=net
+      - LDAP_USER=cn=admin,dc=acumenus,dc=net
+      - LDAP_USERS_DN=ou=users,dc=acumenus,dc=net
+      - LDAP_GROUPS_DN=ou=acumenus,dc=acumenus,dc=net
       - DEBUG=true
     networks:
-      - ldap_network
+      - traefik-proxy
     command: /bin/sh -c "a2enconf lam-httpd && apache2ctl -DFOREGROUND"
     volumes:
       - 'ldap-account-manager-data:/var/lib/ldap-account-manager/config'
       - './lam/apache/lam-httpd.conf:/etc/apache2/conf-available/lam-httpd.conf'
-
-###openLDAP
 
   openldap:
     image: bitnami/openldap:2.6
@@ -445,14 +446,17 @@ ldap-account-manager:
       - '1389:1389'
       - '1636:1636'
     environment:
+      - LDAP_LOG_LEVEL=512
       - LDAP_ADMIN_USERNAME=admin
-      - LDAP_ADMIN_PASSWORD=adminpassword
-      - LDAP_USERS=user00,user01,user02
-      - LDAP_PASSWORDS=password0,password1,password2
+      - LDAP_ADMIN_PASSWORD=Acumenus321$%
+      - LDAP_USERS=user00,user01,user02,acumenus
+      - LDAP_PASSWORDS=password0,password1,password2,acumenus
       - LDAP_ROOT=dc=acumenus,dc=net
       - LDAP_ADMIN_DN=cn=admin,dc=acumenus,dc=net
+      - LDAP_GROUP=acumenus
+      - LDAP_USER_DC=users
     networks:
-      - ldap_network
+      - traefik-proxy
     volumes:
       - 'openldap-data:/bitnami/openldap'
 
