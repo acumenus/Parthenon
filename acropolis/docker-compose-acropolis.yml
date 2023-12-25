@@ -61,34 +61,35 @@ version: '3.7'
 #
 ##################################################
 
-services:
   traefik:
-    image: traefik:v2.10.5
+    image: docker.io/library/traefik:v2.10.5
     container_name: traefik
-    command:
-      - "--api.insecure=false"
-      - "--providers.docker.exposedByDefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.myresolver.acme.email=sudoshi@mac.com"   ### Change to your email
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+    restart: unless-stopped
+    ipc: none
+    read_only: true
+    environment:
+      BROADSEA_HOST: ${BROADSEA_HOST}
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/traefik-${HTTP_TYPE}.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/config.yml:/etc/traefik/config.yml:ro
-      - /path/to/acme.json:/acme.json
+      - ${BROADSEA_CERTS_FOLDER}:/etc/certs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--log.level=INFO"
+      - "--providers.docker=true"	  
+      - "--providers.docker.network=traefik-proxy"
+      - "--providers.docker.exposedByDefault=false"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.acumenus.net`)"  ### Change to your  subdomain.FQDN
-      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
-      - "traefik.http.routers.traefik-dashboard.service=api@internal"
-      - "traefik.http.routers.traefik-dashboard.tls.certresolver=myresolver"
-      - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth"
-      - "traefik.http.middlewares.dashboard-auth.basicauth.users=acumenus:$$apr1$$dNpOAWgT$$.1LJts2Nk6fdwFqJXIgWi0"
+      - "traefik.http.routers.mydashboard.rule=Host(`sandbox.acumenus.net`) && PathPrefix(`/api`, `/dashboard`)"
+      - "traefik.http.routers.mydashboard.service=api@internal"
+      - "traefik.http.routers.mydashboard.middlewares=myauth"
+      - "traefik.http.middlewares.myauth.basicauth.users=acumenus:$$apr1$$aw2RYnxA$$RXTcLZ8KipPUcyeoLGziu0"
     networks:
       - traefik-proxy
 

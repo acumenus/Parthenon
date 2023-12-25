@@ -18,8 +18,6 @@ services:
     read_only: true
     environment:
       BROADSEA_HOST: ${BROADSEA_HOST}
-    labels:
-      - "traefik.enable=true"
     ports:
       - "80:80"
       - "443:443"
@@ -28,6 +26,19 @@ services:
       - ./traefik/config.yml:/etc/traefik/config.yml:ro
       - ${BROADSEA_CERTS_FOLDER}:/etc/certs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--log.level=INFO"
+      - "--providers.docker=true"	  
+      - "--providers.docker.network=traefik-proxy"
+      - "--providers.docker.exposedByDefault=false"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mydashboard.rule=Host(`sandbox.acumenus.net`) && PathPrefix(`/api`, `/dashboard`)"
+      - "traefik.http.routers.mydashboard.service=api@internal"
+      - "traefik.http.routers.mydashboard.middlewares=myauth"
+      - "traefik.http.middlewares.myauth.basicauth.users=acumenus:$$apr1$$aw2RYnxA$$RXTcLZ8KipPUcyeoLGziu0"
     networks:
       - traefik-proxy
 
