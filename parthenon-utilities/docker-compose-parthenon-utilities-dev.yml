@@ -415,7 +415,7 @@ services:
 ###ldap-account-manager
 
   ldap-account-manager:
-    image: ldapaccountmanager/lam:stable
+    image: ghcr.io/ldapaccountmanager/lam:8.6
     container_name: ldap-account-manager
     restart: always
     ports:
