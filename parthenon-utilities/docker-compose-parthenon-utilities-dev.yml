@@ -429,7 +429,7 @@ services:
       - LDAP_BASE_DN=dc=acumenus,dc=net
       - LDAP_USER=cn=admin,dc=acumenus,dc=net
       - LDAP_USERS_DN=ou=users,dc=acumenus,dc=net
-      - LDAP_GROUPS_DN=ou=acumenus,dc=acumenus,dc=net
+      - LDAP_GROUPS_DN=ou=groups,dc=acumenus,dc=net
       - DEBUG=true
     networks:
       - traefik-proxy
@@ -453,7 +453,7 @@ services:
       - LDAP_PASSWORDS=password0,password1,password2,acumenus
       - LDAP_ROOT=dc=acumenus,dc=net
       - LDAP_ADMIN_DN=cn=admin,dc=acumenus,dc=net
-      - LDAP_GROUP=acumenus
+      - LDAP_GROUP=groups
       - LDAP_USER_DC=users
     networks:
       - traefik-proxy
