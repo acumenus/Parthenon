@@ -1,4 +1,4 @@
-Install Instructions:
+The whole journey - step by step:
 
 https://bit.ly/47AkMw9
 
