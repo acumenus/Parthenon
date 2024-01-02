@@ -1,6 +1,6 @@
-Intall Instructions:
+Install Instructions:
 
-https://acumenus.notion.site/acumenus/Project-Parthenon-Getting-Started-4d4fc165bea8467bac88feea090d79cd
+https://bit.ly/47AkMw9
 
 # Parthenon
 Universal jumpserver/homepage and application/services installer/launcher for OHDSI Application Ecosystem
