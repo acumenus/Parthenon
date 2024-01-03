@@ -1,3 +1,7 @@
+The whole journey - step by step:
+
+https://bit.ly/47AkMw9
+
 # Parthenon
 Universal jumpserver/homepage and application/services installer/launcher for OHDSI Application Ecosystem
 
