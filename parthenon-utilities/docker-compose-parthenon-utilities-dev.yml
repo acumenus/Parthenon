@@ -429,11 +429,15 @@ services:
       - LDAP_BASE_DN=dc=acumenus,dc=net
       - LDAP_USER=cn=admin,dc=acumenus,dc=net
       - LDAP_USERS_DN=ou=users,dc=acumenus,dc=net
-      - LDAP_GROUPS_DN=ou=groups,dc=acumenus,dc=net
+      - LDAP_GROUPS_DN=ou=broadsea,dc=acumenus,dc=net
+      - LAM_CONFIGURATION_DATABASE=files
+      - LAM_DISABLE_TLS_CHECK=false
+      - LDAP_ADMIN_PASSWORD=Acumenus321$%
+      - LDAP_ORGANISATION="acumenus.net"
       - DEBUG=true
     networks:
       - traefik-proxy
-    command: /bin/sh -c "a2enconf lam-httpd && apache2ctl -DFOREGROUND"
+    # command: /bin/sh -c "a2enconf lam-httpd && apache2ctl -DFOREGROUND"
     volumes:
       - 'ldap-account-manager-data:/var/lib/ldap-account-manager/config'
       - './lam/apache/lam-httpd.conf:/etc/apache2/conf-available/lam-httpd.conf'
@@ -453,7 +457,7 @@ services:
       - LDAP_PASSWORDS=password0,password1,password2,acumenus
       - LDAP_ROOT=dc=acumenus,dc=net
       - LDAP_ADMIN_DN=cn=admin,dc=acumenus,dc=net
-      - LDAP_GROUP=groups
+      - LDAP_GROUP=broadsea
       - LDAP_USER_DC=users
     networks:
       - traefik-proxy
