@@ -1,3 +1,7 @@
+Our Discord Server:
+
+https://discord.gg/DtENMvmDrn
+
 The whole journey - step by step:
 
 https://bit.ly/47AkMw9
