@@ -1,3 +1,10 @@
+The sandbox:
+
+https://sandbox.acumenus.net
+
+login: admin
+password:  Acumenus321$%
+
 Our Discord Server:
 
 https://discord.gg/DtENMvmDrn
